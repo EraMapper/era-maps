@@ -52,7 +52,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .lv-item{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:8px;cursor:pointer}
 .lv-item:active{border-color:var(--np);background:rgba(255,45,123,.05)}
 .lv-top{display:flex;align-items:flex-start;gap:10px}
-.lv-emoji{font-size:26px;line-height:1}
+.lv-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px;border:2px solid}
+.lv-c-food{background:#ff7043;border-color:#ff7043}
+.lv-c-music{background:#ff2d7b;border-color:#ff2d7b}
+.lv-c-nightlife{background:#7c4dff;border-color:#7c4dff}
+.lv-c-culture{background:#42a5f5;border-color:#42a5f5}
+.lv-c-shop{background:#26c6da;border-color:#26c6da}
+.lv-c-hotel{background:#ffb347;border-color:#ffb347}
+.lv-c-art{background:#e040fb;border-color:#e040fb}
+.lv-c-community{background:#66bb6a;border-color:#66bb6a}
+.lv-c-film{background:#ef5350;border-color:#ef5350}
+.lv-c-closed{background:transparent!important;opacity:.5}
 .lv-info{flex:1;min-width:0}
 .lv-name{font-size:15px;font-weight:700;margin-bottom:2px}
 .lv-meta{font-size:11px;color:var(--ts);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
@@ -69,7 +79,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 #sheetClose{position:absolute;top:10px;right:14px;background:rgba(42,42,58,.8);border:none;color:var(--ts);font-size:18px;width:30px;height:30px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1;font-family:inherit}
 #sheetBody{overflow-y:auto;padding:14px 18px calc(env(safe-area-inset-bottom,8px) + 14px);-webkit-overflow-scrolling:touch;flex:1}
 .sh-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
-.sh-emoji{font-size:34px;line-height:1}
+.sh-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:4px;border:2px solid}
 .sh-info{flex:1;min-width:0}
 .sh-name{font-size:19px;font-weight:800;letter-spacing:-0.3px;line-height:1.2;margin-bottom:3px}
 .sh-type{font-size:12px;color:var(--ts);margin-bottom:3px}
@@ -88,10 +98,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .sh-related{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
 .sh-rel{font-size:11px;padding:4px 9px;border-radius:10px;background:rgba(255,45,123,.08);color:var(--np);border:1px solid rgba(255,45,123,.2);cursor:pointer;font-family:inherit}
 
-/* MAP MARKERS */
-.venue-marker{display:flex;align-items:center;justify-content:center;font-size:20px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6));transition:transform .2s}
-.venue-marker.faded{opacity:.4;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3)) grayscale(0.5)}
-.venue-marker.sel{transform:scale(1.4);filter:drop-shadow(0 0 8px rgba(255,45,123,.6))}
+/* MAP MARKERS — circles by category */
+.vm{width:12px;height:12px;border-radius:50%;border:2px solid;transition:transform .15s}
+.vm.sel{transform:scale(2);box-shadow:0 0 8px rgba(255,255,255,.4)}
+.vm-food{background:#ff7043;border-color:#ff7043}
+.vm-music{background:#ff2d7b;border-color:#ff2d7b}
+.vm-nightlife{background:#7c4dff;border-color:#7c4dff}
+.vm-culture{background:#42a5f5;border-color:#42a5f5}
+.vm-shop{background:#26c6da;border-color:#26c6da}
+.vm-hotel{background:#ffb347;border-color:#ffb347}
+.vm-art{background:#e040fb;border-color:#e040fb}
+.vm-community{background:#66bb6a;border-color:#66bb6a}
+.vm-film{background:#ef5350;border-color:#ef5350}
+.vm.closed{background:transparent!important;opacity:.5}
 .user-dot{width:14px;height:14px;background:var(--np);border:3px solid #fff;border-radius:50%;box-shadow:0 0 10px rgba(255,45,123,.5)}
 .user-ring{width:60px;height:60px;background:rgba(255,45,123,.07);border:1px solid rgba(255,45,123,.12);border-radius:50%}
 </style>
@@ -206,7 +225,7 @@ function renderList(venues){
     var v=venues[i],cl=!!v.ye;
     h+='<div class="lv-item" data-id="'+v.id+'">';
     h+='<div class="lv-top">';
-    h+='<div class="lv-emoji">'+(v.i||'📍')+'</div>';
+    h+='<div class="lv-dot lv-c-'+(v.c||'culture')+(cl?' lv-c-closed':'')+'"></div>';
     h+='<div class="lv-info">';
     h+='<div class="lv-name">'+esc(v.n)+'</div>';
     h+='<div class="lv-meta">';
@@ -245,12 +264,12 @@ function openSheet(id){
   }
 
   var cl=!!v.ye,ds=v._d?fd(v._d):'';
-  var h='<div class="sh-header"><div class="sh-emoji">'+(v.i||'📍')+'</div>';
+  var h='<div class="sh-header"><div class="sh-dot lv-c-'+(v.c||'culture')+(cl?' lv-c-closed':'')+'"></div>';
   h+='<div class="sh-info"><div class="sh-name">'+esc(v.n)+'</div>';
   h+='<div class="sh-type">'+esc(v.t)+' · '+hn(v.h)+'</div>';
-  h+='<div class="sh-addr">📍 '+esc(v.a)+(ds?' ('+ds+')':'')+'</div></div></div>';
+  h+='<div class="sh-addr">'+esc(v.a)+(ds?' ('+ds+')':'')+'</div></div></div>';
   h+='<div class="sh-status '+(cl?'sh-closed':'sh-open')+'">';
-  h+=(cl?'⚫ Closed'+(v.ye?' '+v.ye:''):'🟢 Still Open')+' · Est. '+(v.ys||'?')+'</div>';
+  h+=(cl?'Closed'+(v.ye?' '+v.ye:''):'Still Open')+' · Est. '+(v.ys||'?')+'</div>';
   h+='<div class="sh-desc">'+esc(v.d)+'</div>';
 
   if(v.tl&&v.tl.length){
@@ -269,7 +288,7 @@ function openSheet(id){
     for(var i=0;i<v.rel.length;i++){
       var rv=null;
       for(var j=0;j<V.length;j++){if(V[j].id===v.rel[i]){rv=V[j];break;}}
-      if(rv) h+='<button class="sh-rel" data-id="'+rv.id+'">'+(rv.i||'📍')+' '+esc(rv.n)+'</button>';
+      if(rv) h+='<button class="sh-rel" data-id="'+rv.id+'">'+esc(rv.n)+'</button>';
     }
     h+='</div>';
   }
@@ -323,7 +342,8 @@ function tryInitMap(){
 
     for(var i=0;i<V.length;i++){
       var v=V[i],cl=!!v.ye;
-      var icon=L.divIcon({className:'venue-marker'+(cl?' faded':''),html:v.i||'📍',iconSize:[28,28],iconAnchor:[14,14]});
+      var cls='vm vm-'+(v.c||'culture')+(cl?' closed':'');
+      var icon=L.divIcon({className:cls,html:'',iconSize:[12,12],iconAnchor:[6,6]});
       var m=L.marker([v.lat,v.lng],{icon:icon,zIndexOffset:cl?0:100});
       (function(vid){m.on('click',function(){openSheet(vid)})})(v.id);
       markers[v.id]=m;
@@ -352,18 +372,68 @@ function showList(){
   document.getElementById('listView').style.display='';
   document.getElementById('map').style.display='none';
   document.getElementById('btnList').className='vt active';
-  document.getElementById('btnMap').className='vt'+(mapReady?'':' ');
-  if(!mapReady) document.getElementById('btnMap').style.opacity='0.4';
+  document.getElementById('btnMap').className='vt';
 }
 function showMap(){
-  if(!mapReady) tryInitMap();
-  if(!mapReady) return;
-  viewMode='map';
-  document.getElementById('listView').style.display='none';
-  document.getElementById('map').style.display='block';
-  document.getElementById('btnMap').className='vt active';
-  document.getElementById('btnList').className='vt';
-  try{mapObj.invalidateSize()}catch(e){}
+  if(mapReady){
+    viewMode='map';
+    document.getElementById('listView').style.display='none';
+    document.getElementById('map').style.display='block';
+    document.getElementById('btnMap').className='vt active';
+    document.getElementById('btnList').className='vt';
+    try{mapObj.invalidateSize()}catch(e){}
+    return;
+  }
+  // Leaflet not loaded yet — load it now
+  document.getElementById('btnMap').textContent='Loading…';
+  loadLeaflet(function(ok){
+    if(ok){
+      tryInitMap();
+      if(mapReady){
+        viewMode='map';
+        document.getElementById('listView').style.display='none';
+        document.getElementById('map').style.display='block';
+        document.getElementById('btnMap').className='vt active';
+        document.getElementById('btnMap').textContent='Map';
+        document.getElementById('btnList').className='vt';
+        try{mapObj.invalidateSize()}catch(e){}
+      }else{
+        document.getElementById('btnMap').textContent='Map ✗';
+      }
+    }else{
+      document.getElementById('btnMap').textContent='Map ✗';
+    }
+  });
+}
+
+var leafletCDNs=[
+  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js',
+  'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js'
+];
+var cssLoaded=false;
+function loadLeaflet(cb){
+  if(typeof L!=='undefined'){cb(true);return;}
+  // Ensure CSS is loaded
+  if(!cssLoaded){
+    var cssSrcs=['https://unpkg.com/leaflet@1.9.4/dist/leaflet.css','https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css'];
+    for(var c=0;c<cssSrcs.length;c++){
+      var lnk=document.createElement('link');
+      lnk.rel='stylesheet';lnk.href=cssSrcs[c];
+      document.head.appendChild(lnk);
+    }
+    cssLoaded=true;
+  }
+  var idx=0;
+  function tryNext(){
+    if(idx>=leafletCDNs.length){cb(false);return;}
+    var s=document.createElement('script');
+    s.src=leafletCDNs[idx];
+    s.onload=function(){if(typeof L!=='undefined')cb(true);else{idx++;tryNext();}};
+    s.onerror=function(){idx++;tryNext();};
+    document.body.appendChild(s);
+  }
+  tryNext();
 }
 
 // ===== EVENT LISTENERS (ES5 safe) =====
@@ -467,31 +537,41 @@ document.getElementById('gpsBtn').addEventListener('click',function(){
 });
 
 // ===== BOOT =====
-// 1. Render list immediately — zero dependencies
-document.getElementById('btnMap').style.opacity='0.4';
+// 1. Render list data (in background, for when user switches to list)
 update();
 
-// 2. GPS (fire and forget)
+// 2. GPS (fire and forget — updates map when it resolves)
 try{
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(function(p){
       userLat=p.coords.latitude;userLng=p.coords.longitude;hasGPS=true;
+      if(radius>900){
+        radius=0.5;
+        qsa('.pill[data-r]',function(x){
+          x.className=x.getAttribute('data-r')==='0.5'?'pill active':'pill';
+        });
+      }
       update();
+      if(mapReady) try{mapObj.setView([userLat,userLng],15)}catch(e){}
     },function(){},{enableHighAccuracy:true,timeout:4000});
   }
 }catch(e){}
 
-// 3. Poll for Leaflet
-var mp=0;
-var mi=setInterval(function(){
-  mp++;
-  if(typeof L!=='undefined'){clearInterval(mi);tryInitMap();}
-  else if(mp>30){clearInterval(mi);}
-},200);
+// 3. Load Leaflet immediately and show map
+loadLeaflet(function(ok){
+  if(ok){
+    tryInitMap();
+    if(mapReady){
+      showMap();
+    }
+  }else{
+    // Leaflet failed — stay on list, disable map button
+    document.getElementById('btnMap').textContent='Map ✗';
+    showList();
+  }
+});
 
 </script>
 
-<!-- Leaflet loads async, never blocks anything -->
-<script async src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </body>
 </html>
