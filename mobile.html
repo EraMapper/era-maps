@@ -14,9 +14,8 @@
 body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;background:var(--bg);color:var(--tx);height:100dvh;width:100vw;overflow:hidden;position:relative}
 
 /* MAP (hidden until ready) */
-#map{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;display:none}
-#map.ready{display:block}
-.leaflet-tile-pane{filter:saturate(0.12) brightness(0.42) contrast(1.3) invert(1) hue-rotate(200deg)}
+#map{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0}
+#listView{position:fixed;top:0;left:0;right:0;bottom:0;z-index:500;background:var(--bg);overflow-y:auto;padding:calc(env(safe-area-inset-top,8px) + 90px) 12px calc(env(safe-area-inset-bottom,8px) + 60px);-webkit-overflow-scrolling:touch;display:none}.leaflet-tile-pane{filter:saturate(0.12) brightness(0.42) contrast(1.3) invert(1) hue-rotate(200deg)}
 .leaflet-control-zoom,.leaflet-control-attribution{display:none!important}
 
 /* TOP BAR */
@@ -47,8 +46,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 #gpsBtn.tracking{border-color:var(--np);color:var(--np)}
 
 /* LIST VIEW */
-#listView{position:fixed;top:0;left:0;right:0;bottom:0;z-index:500;background:var(--bg);overflow-y:auto;padding:calc(env(safe-area-inset-top,8px) + 90px) 12px calc(env(safe-area-inset-bottom,8px) + 60px);-webkit-overflow-scrolling:touch}
-#listView.hidden{display:none}
+
 .lv-item{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:8px;cursor:pointer}
 .lv-item:active{border-color:var(--np);background:rgba(255,45,123,.05)}
 .lv-top{display:flex;align-items:flex-start;gap:10px}
@@ -97,6 +95,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .sh-wiki{display:inline-block;margin-top:10px;font-size:12px;color:var(--np);text-decoration:none;font-weight:600}
 .sh-related{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
 .sh-rel{font-size:11px;padding:4px 9px;border-radius:10px;background:rgba(255,45,123,.08);color:var(--np);border:1px solid rgba(255,45,123,.2);cursor:pointer;font-family:inherit}
+.sh-dir{display:inline-block;margin-top:12px;padding:8px 18px;border-radius:20px;background:linear-gradient(135deg,var(--np),var(--na));color:var(--bg);font-size:12px;font-weight:700;text-decoration:none;letter-spacing:.5px}
+
+/* Peek card (map popup) */
+.peek{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;min-width:180px;max-width:220px;cursor:pointer}
+.peek-name{font-size:13px;font-weight:700;margin-bottom:2px}
+.peek-meta{font-size:10px;color:var(--ts)}
+.peek-dist{color:var(--na);font-weight:600;margin-right:6px}
+.peek-status{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:4px}
+.peek-open{background:rgba(76,175,80,.15);color:var(--green)}
+.peek-closed{background:rgba(138,138,154,.1);color:var(--tm)}
+.leaflet-popup-content-wrapper{background:transparent!important;box-shadow:none!important;padding:0!important;border:none!important}
+.leaflet-popup-content{margin:0!important}
+.leaflet-popup-tip-container{display:none!important}
+.leaflet-popup-close-button{display:none!important}
 
 /* MAP MARKERS — circles by category */
 .vm{width:12px;height:12px;border-radius:50%;border:2px solid;transition:transform .15s}
@@ -111,8 +123,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .vm-community{background:#66bb6a;border-color:#66bb6a}
 .vm-film{background:#ef5350;border-color:#ef5350}
 .vm.closed{background:transparent!important;opacity:.5}
-.user-dot{width:14px;height:14px;background:var(--np);border:3px solid #fff;border-radius:50%;box-shadow:0 0 10px rgba(255,45,123,.5)}
-.user-ring{width:60px;height:60px;background:rgba(255,45,123,.07);border:1px solid rgba(255,45,123,.12);border-radius:50%}
+/* User location — animated pulse */
+.user-dot{width:14px;height:14px;background:#fff;border:3px solid var(--np);border-radius:50%;box-shadow:0 0 8px rgba(255,45,123,.7)}
+.user-pulse{width:40px;height:40px;border-radius:50%;background:rgba(255,45,123,.15);border:1px solid rgba(255,45,123,.25);animation:pulse 2s ease-out infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:1}100%{transform:scale(2.5);opacity:0}}
 </style>
 </head>
 <body>
@@ -136,6 +150,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
   <button class="pill cat" data-c="culture">🏛 Culture</button>
   <button class="pill cat" data-c="shop">🛍 Shops</button>
   <button class="pill cat" data-c="hotel">🏨 Hotels</button>
+  <div class="pill-sep"></div>
+  <button class="pill" id="openToggle">Still open</button>
  </div>
 </div>
 
@@ -144,8 +160,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 
 <div id="bottomBar">
  <div id="viewToggle">
-  <button class="vt" id="btnMap">Map</button>
-  <button class="vt active" id="btnList">List</button>
+  <button class="vt active" id="btnMap">Map</button>
+  <button class="vt" id="btnList">List</button>
  </div>
  <div id="countBadge">702 venues</div>
  <button id="gpsBtn">◎</button>
@@ -163,11 +179,12 @@ var V=[{"id":"garden","h":"sunset","n":"Garden of Allah","t":"Legendary Apartmen
 
 // ===== STATE =====
 var userLat=34.0522,userLng=-118.2437;
-var radius=999,activeCat='all',searchTerm='';
+var radius=999,activeCat='all',searchTerm='',onlyOpen=false;
 var selectedId=null,hasGPS=false;
 var mapObj=null,mapReady=false,markers={},visibleIds={};
 var tracking=false,watchId=null;
 var viewMode='list';
+var userDotMarker=null,userPulseMarker=null;
 
 var HOODS={sunset:'Sunset Strip',hollywood:'Hollywood',silverlake:'Silver Lake',losfeliz:'Los Feliz',echopark:'Echo Park',downtown:'Downtown',venice:'Venice',santamonica:'Santa Monica',bevhills:'Beverly Hills',weho:'West Hollywood',fairfax:'Fairfax',ktown:'Koreatown',chinatown:'Chinatown',artsdistrict:'Arts District',southla:'South LA',westla:'West LA',valley:'Valley',noho:'North Hollywood',burbank:'Burbank',studiocity:'Studio City',pasadena:'Pasadena',longbeach:'Long Beach',culvercity:'Culver City',atwater:'Atwater Village',lincolnheights:'Lincoln Heights',littletokyo:'Little Tokyo',palosverdes:'Palos Verdes',hermosabeach:'Hermosa Beach',manhattanbeach:'Manhattan Beach',redondobeach:'Redondo Beach',brentwood:'Brentwood',highlandpark:'Highland Park',eaglerock:'Eagle Rock',glendale:'Glendale',altadena:'Altadena',marinadelrey:'Marina del Rey',westwood:'Westwood'};
 
@@ -205,6 +222,7 @@ function getFiltered(){
   for(var i=0;i<V.length;i++){
     var v=V[i];
     v._d=hdist(userLat,userLng,v.lat,v.lng);
+    if(onlyOpen&&v.ye) continue;
     if(v._d>radius&&radius<900) continue;
     if(activeCat!=='all'&&v.c!==activeCat) continue;
     if(s){
@@ -283,6 +301,7 @@ function openSheet(id){
     h+='</div>';
   }
   if(v.w) h+='<a class="sh-wiki" href="https://en.wikipedia.org/wiki/'+v.w+'" target="_blank" rel="noopener">Wikipedia →</a>';
+  h+='<br><a class="sh-dir" href="https://maps.apple.com/?daddr='+v.lat+','+v.lng+'&dirflg=w" target="_blank" rel="noopener">Get Directions</a>';
   if(v.rel&&v.rel.length){
     h+='<div class="sh-section">Related</div><div class="sh-related">';
     for(var i=0;i<v.rel.length;i++){
@@ -332,6 +351,19 @@ function updateMapMarkers(filtered){
   }catch(e){}
 }
 
+function placeUserDot(){
+  if(!mapReady||typeof L==='undefined') return;
+  try{
+    if(userDotMarker){
+      userDotMarker.setLatLng([userLat,userLng]);
+      userPulseMarker.setLatLng([userLat,userLng]);
+    }else{
+      userPulseMarker=L.marker([userLat,userLng],{icon:L.divIcon({className:'user-pulse',iconSize:[40,40],iconAnchor:[20,20]}),zIndexOffset:9999}).addTo(mapObj);
+      userDotMarker=L.marker([userLat,userLng],{icon:L.divIcon({className:'user-dot',iconSize:[14,14],iconAnchor:[7,7]}),zIndexOffset:10000}).addTo(mapObj);
+    }
+  }catch(e){}
+}
+
 function tryInitMap(){
   if(mapReady) return;
   if(typeof L==='undefined') return;
@@ -345,20 +377,41 @@ function tryInitMap(){
       var cls='vm vm-'+(v.c||'culture')+(cl?' closed':'');
       var icon=L.divIcon({className:cls,html:'',iconSize:[12,12],iconAnchor:[6,6]});
       var m=L.marker([v.lat,v.lng],{icon:icon,zIndexOffset:cl?0:100});
-      (function(vid){m.on('click',function(){openSheet(vid)})})(v.id);
+      (function(venue){
+        m.on('click',function(){
+          var cl2=!!venue.ye,ds=venue._d?fd(venue._d):'';
+          var ph='<div class="peek" data-id="'+venue.id+'">';
+          ph+='<div class="peek-name">'+esc(venue.n)+'</div>';
+          ph+='<div class="peek-meta">';
+          if(ds) ph+='<span class="peek-dist">'+ds+'</span>';
+          ph+=esc(venue.t);
+          ph+='<span class="peek-status '+(cl2?'peek-closed':'peek-open')+'">'+(cl2?'Closed':'Open')+'</span>';
+          ph+='</div></div>';
+          L.popup({closeButton:false,offset:[0,-8]}).setLatLng([venue.lat,venue.lng]).setContent(ph).openOn(mapObj);
+        });
+      })(v);
       markers[v.id]=m;
     }
 
-    if(hasGPS){
-      L.marker([userLat,userLng],{icon:L.divIcon({className:'user-dot',iconSize:[14,14],iconAnchor:[7,7]}),zIndexOffset:10000}).addTo(mapObj);
-      L.marker([userLat,userLng],{icon:L.divIcon({className:'user-ring',iconSize:[60,60],iconAnchor:[30,30]}),zIndexOffset:9999}).addTo(mapObj);
-    }
+    mapObj.on('popupopen',function(){
+      setTimeout(function(){
+        var peeks=document.querySelectorAll('.peek');
+        for(var p=0;p<peeks.length;p++){
+          peeks[p].addEventListener('click',function(){
+            var pid=this.getAttribute('data-id');
+            mapObj.closePopup();
+            openSheet(pid);
+          });
+        }
+      },50);
+    });
+
+    if(hasGPS) placeUserDot();
 
     mapObj.on('click',function(){
       if(document.getElementById('sheet').className.indexOf('open')>=0) closeSheet();
     });
 
-    el.className='ready';
     mapReady=true;
     document.getElementById('btnMap').style.opacity='1';
     document.getElementById('gpsBtn').className='show';
@@ -504,6 +557,13 @@ document.getElementById('searchInput').addEventListener('input',function(e){
   st=setTimeout(function(){searchTerm=e.target.value;update()},250);
 });
 
+// Still Open toggle
+document.getElementById('openToggle').addEventListener('click',function(){
+  onlyOpen=!onlyOpen;
+  this.className=onlyOpen?'pill active':'pill';
+  update();
+});
+
 // GPS button
 document.getElementById('gpsBtn').addEventListener('click',function(){
   var btn=document.getElementById('gpsBtn');
@@ -524,11 +584,13 @@ document.getElementById('gpsBtn').addEventListener('click',function(){
             x.className=x.getAttribute('data-r')==='0.5'?'pill active':'pill';
           });
         }
+        placeUserDot();
         if(mapReady) try{mapObj.setView([userLat,userLng],15)}catch(e){}
         update();
       },function(){},{enableHighAccuracy:true,timeout:5000});
       watchId=navigator.geolocation.watchPosition(function(p){
         userLat=p.coords.latitude;userLng=p.coords.longitude;
+        placeUserDot();
         if(mapReady) try{mapObj.setView([userLat,userLng],mapObj.getZoom())}catch(e){}
         update();
       },function(){},{enableHighAccuracy:true});
@@ -552,6 +614,7 @@ try{
         });
       }
       update();
+      placeUserDot();
       if(mapReady) try{mapObj.setView([userLat,userLng],15)}catch(e){}
     },function(){},{enableHighAccuracy:true,timeout:4000});
   }
