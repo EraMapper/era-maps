@@ -99,15 +99,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .sh-dir{display:inline-block;margin-top:12px;padding:8px 18px;border-radius:20px;background:linear-gradient(135deg,var(--np),var(--na));color:var(--bg);font-size:12px;font-weight:700;text-decoration:none;letter-spacing:.5px}
 
 /* Peek card (map popup) */
-.peek{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;min-width:180px;max-width:220px;cursor:pointer}
-.peek-name{font-size:13px;font-weight:700;margin-bottom:2px}
+.peek{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;min-width:180px;max-width:220px;cursor:pointer;color:#fff}
+.peek-name{font-size:13px;font-weight:700;margin-bottom:2px;color:#fff}
 .peek-meta{font-size:10px;color:var(--ts)}
 .peek-dist{color:var(--na);font-weight:600;margin-right:6px}
 .peek-status{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:4px}
 .peek-open{background:rgba(76,175,80,.15);color:var(--green)}
 .peek-closed{background:rgba(138,138,154,.1);color:var(--tm)}
 .leaflet-popup-content-wrapper{background:transparent!important;box-shadow:none!important;padding:0!important;border:none!important}
-.leaflet-popup-content{margin:0!important}
+.leaflet-popup-content{margin:0!important;color:#fff!important}
 .leaflet-popup-tip-container{display:none!important}
 .leaflet-popup-close-button{display:none!important}
 
@@ -428,7 +428,7 @@ function tryInitMap(){
 // ===== VIEW SWITCHING =====
 function showList(){
   viewMode='list';
-  document.getElementById('listView').style.display='';
+  document.getElementById('listView').style.display='block';
   document.getElementById('map').style.display='none';
   document.getElementById('btnList').className='vt active';
   document.getElementById('btnMap').className='vt';
