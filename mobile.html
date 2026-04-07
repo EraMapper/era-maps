@@ -139,6 +139,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .user-dot{width:14px;height:14px;background:#fff;border:3px solid var(--np);border-radius:50%;box-shadow:0 0 8px rgba(255,45,123,.7)}
 .user-pulse{width:40px;height:40px;border-radius:50%;background:rgba(255,45,123,.15);border:1px solid rgba(255,45,123,.25);animation:pulse 2s ease-out infinite}
 @keyframes pulse{0%{transform:scale(1);opacity:1}100%{transform:scale(2.5);opacity:0}}
+/* TOURS */
+#tourList{position:fixed;top:0;left:0;right:0;bottom:0;z-index:500;background:var(--bg);overflow-y:auto;padding:calc(env(safe-area-inset-top,8px) + 70px) 12px calc(env(safe-area-inset-bottom,8px) + 60px);-webkit-overflow-scrolling:touch;display:none}
+.tour-card{background:rgba(26,26,36,.92);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
+.tour-card:active{border-color:var(--np)}
+.tour-icon{font-size:28px;margin-bottom:6px}
+.tour-title{font-size:16px;font-weight:700;color:var(--tx);margin-bottom:4px}
+.tour-desc{font-size:12px;color:var(--ts);line-height:1.5;margin-bottom:8px}
+.tour-meta{font-size:11px;color:var(--tm)}
+/* Active tour bar */
+#tourBar{position:fixed;bottom:60px;left:0;right:0;z-index:1002;padding:0 12px calc(env(safe-area-inset-bottom,0px));display:none}
+#tourBarInner{background:rgba(26,26,36,.96);border:1px solid var(--bd);border-radius:16px;padding:12px 16px;display:flex;align-items:center;gap:10px}
+#tourBarInfo{flex:1;min-width:0}
+#tourBarName{font-size:11px;color:var(--np);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:2px}
+#tourBarStop{font-size:14px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tourBarCount{font-size:11px;color:var(--ts)}
+.tour-btn{padding:8px 14px;border-radius:12px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit}
+#tourPrev{background:rgba(90,90,106,.3);color:var(--ts)}
+#tourNext{background:linear-gradient(135deg,var(--np),var(--na));color:var(--bg)}
+#tourExit{background:rgba(239,83,80,.15);color:#ef5350;font-size:11px;padding:6px 10px}
+/* Tour numbered markers */
+.vm-tour-num{width:22px;height:22px;border-radius:50%;background:var(--np);color:var(--bg);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 0 8px rgba(255,45,123,.5);border:2px solid #fff;line-height:1}
+.vm-tour-num.visited{background:rgba(90,90,106,.5);box-shadow:none;border-color:var(--bd)}
+.vm-tour-num.current{transform:scale(1.3);box-shadow:0 0 14px rgba(255,45,123,.7);animation:pulse-tour 2s ease-out infinite}
+@keyframes pulse-tour{0%{box-shadow:0 0 8px rgba(255,45,123,.5)}50%{box-shadow:0 0 18px rgba(255,45,123,.8)}100%{box-shadow:0 0 8px rgba(255,45,123,.5)}}
 </style>
 </head>
 <body>
@@ -197,11 +221,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 
 <div id="map"></div>
 <div id="listView"></div>
+<div id="tourList"></div>
+<div id="tourBar"><div id="tourBarInner">
+ <button class="tour-btn" id="tourPrev">‹</button>
+ <div id="tourBarInfo"><div id="tourBarName"></div><div id="tourBarStop"></div><div id="tourBarCount"></div></div>
+ <button class="tour-btn" id="tourNext">Next ›</button>
+ <button class="tour-btn" id="tourExit">✕</button>
+</div></div>
 
 <div id="bottomBar">
  <div id="viewToggle">
   <button class="vt active" id="btnMap">Map</button>
   <button class="vt" id="btnList">List</button>
+  <button class="vt" id="btnTours">Tours</button>
  </div>
  <div id="countBadge">702 venues</div>
  <button id="gpsBtn">◎</button>
@@ -227,6 +259,22 @@ var viewMode='list';
 var userDotMarker=null,userPulseMarker=null;
 
 var HOODS={sunset:'Sunset Strip',hollywood:'Hollywood',silverlake:'Silver Lake',losfeliz:'Los Feliz',echopark:'Echo Park',downtown:'Downtown',venice:'Venice',santamonica:'Santa Monica',bevhills:'Beverly Hills',weho:'West Hollywood',fairfax:'Fairfax',ktown:'Koreatown',chinatown:'Chinatown',artsdistrict:'Arts District',southla:'South LA',westla:'West LA',valley:'Valley',noho:'North Hollywood',burbank:'Burbank',studiocity:'Studio City',pasadena:'Pasadena',longbeach:'Long Beach',culvercity:'Culver City',atwater:'Atwater Village',lincolnheights:'Lincoln Heights',littletokyo:'Little Tokyo',palosverdes:'Palos Verdes',hermosabeach:'Hermosa Beach',manhattanbeach:'Manhattan Beach',redondobeach:'Redondo Beach',brentwood:'Brentwood',highlandpark:'Highland Park',eaglerock:'Eagle Rock',glendale:'Glendale',altadena:'Altadena',marinadelrey:'Marina del Rey',westwood:'Westwood'};
+
+// ===== CURATED TOURS =====
+var TOURS=[
+{id:'striprock',name:'Sunset Strip Rock Walk',desc:'The mile that invented LA rock — from the Doors\u2019 first residency to hair metal\u2019s last stand.',icon:'\uD83C\uDFB8',stops:['londonfog','whisky','roxy','rainbow','gazarri','viper','troubadour','towerrec','starwood','rodney']},
+{id:'noir',name:'Noir LA',desc:'Raymond Chandler\u2019s city. Black Dahlia corners, crooked mansions, and bars where detectives drank.',icon:'\uD83D\uDD75\uFE0F',stops:['musso','frolicroom','biltmore','bradbury','cecilhotel','greystone','sowden','threeclubs']},
+{id:'oldhollywood',name:'Old Hollywood Power Lunch',desc:'Where golden-age stars held court — the hotels, restaurants, and watering holes that built the myth.',icon:'\u2B50',stops:['hollywoodhotel','roosevelt','chateau','musso','formosa','yamashiro','polo','chasens','schwabs']},
+{id:'dtlawalk',name:'DTLA Broadway Theatre Walk',desc:'A walkable stretch of the densest collection of pre-war movie palaces on Earth.',icon:'\uD83C\uDFAD',stops:['milliondollar','globetheatre','palacetheatre','latheater','orpheum','acehotel','latower','bradbury','grandcentral','lastbookstore']},
+{id:'eastside',name:'Silver Lake & Echo Park After Dark',desc:'The eastside indie circuit — dive bars, secret tikis, and the clubs that launched a thousand bands.',icon:'\uD83C\uDF19',stops:['blackcat','tikiti','sllounge','echo','akbar','shortstop','littlejoy','goldroom','casitadel','edendale']},
+{id:'tiki',name:'Tiki Trail',desc:'Polynesian pop across LA — from the birthplace of the tropical cocktail to the last neighborhood tiki bars.',icon:'\uD83C\uDF34',stops:['donbeach','tikiti','tongahut','damonssteakhouse','kelbos','warehouserest']},
+{id:'lgbtq',name:'Before Stonewall: LGBTQ LA',desc:'Spaces of resistance and joy — from the 1960s Black Cat uprising to the clubs that built a community.',icon:'\uD83C\uDFF3\uFE0F\u200D\uD83C\uDF08',stops:['blackcat','silverplatter','catchone','studioone','thepalms','theabbey','akbar','roosterfish','tomoffinlandhouse']},
+{id:'ghost',name:'Gone But Not Forgotten',desc:'LA\u2019s demolished landmarks. Every stop is a ghost — stand where they stood and read what was lost.',icon:'\uD83D\uDC7B',stops:['garden','trocadero','schwabs','pandora','ambassador','brownderbyog','shipscoffee','hollywoodstarlanes','scandia','tropicana']},
+{id:'classiceats',name:'The Old-School Eats Trail',desc:'Delis, diners, and drive-ins that have been feeding LA since before the freeways.',icon:'\uD83C\uDF54',stops:['philippes','pantry','langers','canters','pinks','dupars','natenal','applepan','bobsbigboy','randysdonuts']},
+{id:'venice',name:'Venice Beach to Santa Monica',desc:'Boardwalk muscle, Beat poetry, skate culture, and the pier — the full coastal circuit.',icon:'\uD83C\uDFD6\uFE0F',stops:['boardwalk','musclebeach','goldsgym','veniceartwall','beyondbaroque','townhouse','hinano','smpier','chezjay','baycities']}
+];
+
+var activeTour=null,tourStep=0,tourLine=null;
 
 // ===== UTILS (ES5 safe) =====
 function hdist(lat1,lng1,lat2,lng2){
@@ -488,35 +536,39 @@ function tryInitMap(){
 }
 
 // ===== VIEW SWITCHING =====
+function clearActiveView(){
+  document.getElementById('listView').style.display='none';
+  document.getElementById('tourList').style.display='none';
+  document.getElementById('map').style.display='none';
+  document.getElementById('btnList').className='vt';
+  document.getElementById('btnMap').className='vt';
+  document.getElementById('btnTours').className='vt';
+}
 function showList(){
   viewMode='list';
+  clearActiveView();
   document.getElementById('listView').style.display='block';
-  document.getElementById('map').style.display='none';
   document.getElementById('btnList').className='vt active';
-  document.getElementById('btnMap').className='vt';
 }
 function showMap(){
   if(mapReady){
     viewMode='map';
-    document.getElementById('listView').style.display='none';
+    clearActiveView();
     document.getElementById('map').style.display='block';
     document.getElementById('btnMap').className='vt active';
-    document.getElementById('btnList').className='vt';
     try{mapObj.invalidateSize()}catch(e){}
     return;
   }
-  // Leaflet not loaded yet — load it now
   document.getElementById('btnMap').textContent='Loading…';
   loadLeaflet(function(ok){
     if(ok){
       tryInitMap();
       if(mapReady){
         viewMode='map';
-        document.getElementById('listView').style.display='none';
+        clearActiveView();
         document.getElementById('map').style.display='block';
         document.getElementById('btnMap').className='vt active';
         document.getElementById('btnMap').textContent='Map';
-        document.getElementById('btnList').className='vt';
         try{mapObj.invalidateSize()}catch(e){}
       }else{
         document.getElementById('btnMap').textContent='Map ✗';
@@ -525,6 +577,156 @@ function showMap(){
       document.getElementById('btnMap').textContent='Map ✗';
     }
   });
+}
+function showTours(){
+  viewMode='tours';
+  clearActiveView();
+  document.getElementById('tourList').style.display='block';
+  document.getElementById('btnTours').className='vt active';
+  renderTourList();
+}
+
+// ===== TOUR SYSTEM =====
+var tourMarkers=[];
+
+function renderTourList(){
+  var el=document.getElementById('tourList');
+  var h='';
+  for(var i=0;i<TOURS.length;i++){
+    var t=TOURS[i];
+    // Count valid stops and active/demolished
+    var valid=0,activeCount=0,goneCount=0;
+    for(var j=0;j<t.stops.length;j++){
+      for(var k=0;k<V.length;k++){
+        if(V[k].id===t.stops[j]){
+          valid++;
+          if(V[k].s==='active') activeCount++;
+          else goneCount++;
+          break;
+        }
+      }
+    }
+    h+='<div class="tour-card" data-tour="'+t.id+'">';
+    h+='<div class="tour-icon">'+t.icon+'</div>';
+    h+='<div class="tour-title">'+esc(t.name)+'</div>';
+    h+='<div class="tour-desc">'+esc(t.desc)+'</div>';
+    h+='<div class="tour-meta">'+valid+' stops';
+    if(goneCount>0) h+=' · '+activeCount+' still here, '+goneCount+' gone';
+    h+='</div></div>';
+  }
+  el.innerHTML=h;
+}
+
+function getVenueById(id){
+  for(var i=0;i<V.length;i++){if(V[i].id===id) return V[i];}
+  return null;
+}
+
+function startTour(tourId){
+  if(!mapReady) return;
+  var tour=null;
+  for(var i=0;i<TOURS.length;i++){if(TOURS[i].id===tourId){tour=TOURS[i];break;}}
+  if(!tour) return;
+  activeTour=tour;
+  tourStep=0;
+
+  // Switch to map
+  viewMode='map';
+  clearActiveView();
+  document.getElementById('map').style.display='block';
+  document.getElementById('btnMap').className='vt active';
+  try{mapObj.invalidateSize()}catch(e){}
+
+  // Hide all normal markers
+  var keys=Object.keys(visibleIds);
+  for(var i=0;i<keys.length;i++){
+    if(markers[keys[i]]) mapObj.removeLayer(markers[keys[i]]);
+  }
+  visibleIds={};
+
+  // Clear old tour markers
+  clearTourMarkers();
+
+  // Place numbered markers for each stop
+  var bounds=[];
+  for(var i=0;i<tour.stops.length;i++){
+    var v=getVenueById(tour.stops[i]);
+    if(!v) continue;
+    var cls='vm-tour-num'+(i===0?' current':'');
+    var icon=L.divIcon({className:cls,html:''+(i+1),iconSize:[22,22],iconAnchor:[11,11]});
+    var m=L.marker([v.lat,v.lng],{icon:icon,zIndexOffset:2000+i});
+    (function(venue,idx){
+      m.on('click',function(){
+        goToTourStop(idx);
+        openSheet(venue.id);
+      });
+    })(v,i);
+    m.addTo(mapObj);
+    tourMarkers.push(m);
+    bounds.push([v.lat,v.lng]);
+  }
+
+  // Draw route line
+  if(bounds.length>1){
+    tourLine=L.polyline(bounds,{color:'#ff2d7b',weight:2,opacity:.5,dashArray:'6,8'}).addTo(mapObj);
+  }
+
+  // Fit bounds
+  if(bounds.length>1){
+    try{mapObj.fitBounds(bounds,{padding:[60,40]})}catch(e){}
+  }else if(bounds.length===1){
+    mapObj.setView(bounds[0],15);
+  }
+
+  // Show tour bar
+  document.getElementById('tourBar').style.display='block';
+  updateTourBar();
+}
+
+function updateTourBar(){
+  if(!activeTour) return;
+  var v=getVenueById(activeTour.stops[tourStep]);
+  document.getElementById('tourBarName').textContent=activeTour.icon+' '+activeTour.name;
+  document.getElementById('tourBarStop').textContent=v?v.n:'?';
+  document.getElementById('tourBarCount').textContent='Stop '+(tourStep+1)+' of '+activeTour.stops.length;
+  document.getElementById('tourPrev').style.display=tourStep>0?'inline-block':'none';
+  document.getElementById('tourNext').textContent=tourStep<activeTour.stops.length-1?'Next ›':'Done ✓';
+
+  // Update marker styles
+  for(var i=0;i<tourMarkers.length;i++){
+    try{
+      var el=tourMarkers[i].getElement();
+      if(!el) continue;
+      el.className='vm-tour-num'+(i<tourStep?' visited':i===tourStep?' current':'');
+    }catch(e){}
+  }
+}
+
+function goToTourStop(idx){
+  if(!activeTour||idx<0||idx>=activeTour.stops.length) return;
+  tourStep=idx;
+  var v=getVenueById(activeTour.stops[idx]);
+  if(v&&mapReady){
+    try{mapObj.setView([v.lat,v.lng],16,{animate:true})}catch(e){}
+  }
+  updateTourBar();
+}
+
+function clearTourMarkers(){
+  for(var i=0;i<tourMarkers.length;i++){
+    try{mapObj.removeLayer(tourMarkers[i])}catch(e){}
+  }
+  tourMarkers=[];
+  if(tourLine){try{mapObj.removeLayer(tourLine)}catch(e){} tourLine=null;}
+}
+
+function exitTour(){
+  activeTour=null;tourStep=0;
+  document.getElementById('tourBar').style.display='none';
+  clearTourMarkers();
+  // Restore normal markers
+  updateMapMarkers(getFiltered());
+  try{mapObj.setView([userLat,userLng],radius>900?11:15)}catch(e){}
 }
 
 var leafletCDNs=[
@@ -593,7 +795,39 @@ document.getElementById('sheetHandle').addEventListener('touchmove',function(e){
 
 // View toggle
 document.getElementById('btnList').addEventListener('click',showList);
-document.getElementById('btnMap').addEventListener('click',showMap);
+document.getElementById('btnMap').addEventListener('click',function(){
+  if(activeTour) exitTour();
+  showMap();
+});
+document.getElementById('btnTours').addEventListener('click',showTours);
+
+// Tour card taps
+document.getElementById('tourList').addEventListener('click',function(e){
+  var node=e.target;
+  while(node&&node!==document.getElementById('tourList')){
+    if(node.getAttribute&&node.getAttribute('data-tour')){
+      startTour(node.getAttribute('data-tour'));
+      return;
+    }
+    node=node.parentNode;
+  }
+});
+
+// Tour bar buttons
+document.getElementById('tourNext').addEventListener('click',function(){
+  if(!activeTour) return;
+  if(tourStep>=activeTour.stops.length-1){exitTour();return;}
+  goToTourStop(tourStep+1);
+  var v=getVenueById(activeTour.stops[tourStep]);
+  if(v) openSheet(v.id);
+});
+document.getElementById('tourPrev').addEventListener('click',function(){
+  if(!activeTour||tourStep<=0) return;
+  goToTourStop(tourStep-1);
+  var v=getVenueById(activeTour.stops[tourStep]);
+  if(v) openSheet(v.id);
+});
+document.getElementById('tourExit').addEventListener('click',exitTour);
 
 // Radius select
 document.getElementById('radiusSelect').addEventListener('change',function(){
