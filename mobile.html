@@ -49,6 +49,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .sh-s-transformed{background:rgba(124,77,255,.12);color:#b388ff}
 .sh-prevnext{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
 .sh-pn{font-size:11px;padding:5px 10px;border-radius:10px;background:rgba(124,77,255,.1);color:#b388ff;border:1px solid rgba(124,77,255,.25);cursor:pointer;font-family:inherit}
+/* ADDRESS LINEAGE */
+.sh-lineage{margin:12px 0 6px;padding:12px 14px;background:rgba(26,26,36,.6);border:1px solid var(--bd);border-radius:14px}
+.sh-lineage-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--tm);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sh-lineage-title::before{content:'';display:block;width:16px;height:16px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%237c4dff' stroke-width='1.5'%3E%3Cpath d='M8 1v14M4 5l4-4 4 4M4 11l4 4 4-4'/%3E%3C/svg%3E") no-repeat center}
+.sh-lin-list{list-style:none;position:relative;padding-left:18px}
+.sh-lin-list::before{content:'';position:absolute;left:5px;top:8px;bottom:8px;width:2px;background:var(--bd)}
+.sh-lin-item{position:relative;padding:6px 0 6px 0;cursor:pointer;transition:background .15s}
+.sh-lin-item::before{content:'';position:absolute;left:-13px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;border:2px solid var(--bd);background:var(--sf);z-index:1;transition:all .15s}
+.sh-lin-item.current::before{border-color:var(--np);background:var(--np);box-shadow:0 0 6px rgba(255,45,123,.4)}
+.sh-lin-item.era-active::before{border-color:#66bb6a}
+.sh-lin-item.era-closed::before{border-color:#ffa726}
+.sh-lin-item.era-demolished::before{border-color:#ef5350}
+.sh-lin-item.era-transformed::before{border-color:#b388ff}
+.sh-lin-name{font-size:13px;font-weight:700;color:var(--tx);line-height:1.3}
+.sh-lin-item.current .sh-lin-name{color:var(--np)}
+.sh-lin-meta{font-size:11px;color:var(--ts);margin-top:1px;display:flex;align-items:center;gap:6px}
+.sh-lin-years{font-weight:600;color:var(--na)}
+.sh-lin-status{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:1px 5px;border-radius:4px}
+.sh-lin-status.s-active{color:#66bb6a}
+.sh-lin-status.s-closed{color:#ffa726}
+.sh-lin-status.s-demolished{color:#ef5350}
+.sh-lin-status.s-transformed{color:#b388ff}
+.sh-lin-arrow{font-size:10px;color:var(--bd);text-align:center;padding:2px 0 2px 0;margin-left:-3px}
+.sh-lin-item:active{background:rgba(255,255,255,.03);border-radius:8px}
 
 /* BOTTOM CONTROLS */
 #bottomBar{position:fixed;bottom:0;left:0;right:0;z-index:1001;padding:10px 16px calc(env(safe-area-inset-bottom,8px) + 10px);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(0deg,rgba(10,10,15,.97) 0%,rgba(10,10,15,.85) 80%,transparent 100%);pointer-events:none}
@@ -365,6 +389,72 @@ function renderList(venues){
   el.innerHTML=h;
 }
 
+// ===== ADDRESS LINEAGE =====
+function findVenueById(id){for(var i=0;i<V.length;i++){if(V[i].id===id) return V[i];}return null;}
+
+function buildLineage(venueId){
+  var v=findVenueById(venueId);
+  if(!v) return [];
+  var seen={};
+  var chain=[];
+  // Walk prev chain backwards
+  var cur=v;
+  while(cur&&cur.prev&&!seen[cur.prev]){
+    var pv=findVenueById(cur.prev);
+    if(!pv) break;
+    seen[pv.id]=true;
+    chain.unshift(pv);
+    cur=pv;
+  }
+  // Add current
+  seen[v.id]=true;
+  chain.push(v);
+  // Walk next chain forwards
+  cur=v;
+  while(cur&&cur.next&&!seen[cur.next]){
+    var nv=findVenueById(cur.next);
+    if(!nv) break;
+    seen[nv.id]=true;
+    chain.push(nv);
+    cur=nv;
+  }
+  // Chain is now in correct transformation order
+  // Assign ordinals so chain order is preserved in final sort
+  var chainOrder={};
+  for(var ci=0;ci<chain.length;ci++) chainOrder[chain[ci].id]=ci;
+  // Find co-located venues by proximity (~25m)
+  var thresh=0.00025;
+  var extras=[];
+  for(var i=0;i<V.length;i++){
+    if(seen[V[i].id]) continue;
+    var dlat=Math.abs(V[i].lat-v.lat);
+    var dlng=Math.abs(V[i].lng-v.lng);
+    if(dlat<thresh&&dlng<thresh){
+      seen[V[i].id]=true;
+      extras.push(V[i]);
+    }
+  }
+  // Sort extras by year
+  extras.sort(function(a,b){return (a.ys||9999)-(b.ys||9999);});
+  // Merge: chain in order, then extras sorted chronologically
+  // Insert extras at correct chronological position relative to chain
+  var result=chain.slice();
+  for(var ei=0;ei<extras.length;ei++){
+    var eyr=extras[ei].ys||9999;
+    var inserted=false;
+    for(var ri=0;ri<result.length;ri++){
+      // Insert before the first chain item that started after this extra
+      if(chainOrder[result[ri].id]!==undefined&&(result[ri].ys||9999)>eyr){
+        result.splice(ri,0,extras[ei]);
+        inserted=true;
+        break;
+      }
+    }
+    if(!inserted) result.push(extras[ei]);
+  }
+  return result;
+}
+
 // ===== STORY SHEET =====
 function openSheet(id){
   var v=null;
@@ -394,18 +484,28 @@ function openSheet(id){
   h+='<div class="sh-addr">'+esc(v.a)+(ds?' ('+ds+')':'')+'</div></div></div>';
   h+='<div class="sh-status sh-s-'+v.s+'">';
   h+=slabel(v)+(v.ye?' '+v.ye:'')+' · Est. '+(v.ys||'?')+'</div>';
-  // Prev/next for transformed venues
-  if(v.prev||v.next){
-    h+='<div class="sh-prevnext">';
-    if(v.prev){
-      var pv=null;for(var pi=0;pi<V.length;pi++){if(V[pi].id===v.prev){pv=V[pi];break;}}
-      if(pv) h+='<button class="sh-pn sh-rel" data-id="'+pv.id+'">← Previously: '+esc(pv.n)+'</button>';
+  // Address lineage
+  var lineage=buildLineage(id);
+  if(lineage.length>=2){
+    h+='<div class="sh-lineage"><div class="sh-lineage-title">What was here</div>';
+    h+='<ul class="sh-lin-list">';
+    for(var li=0;li<lineage.length;li++){
+      var lv=lineage[li];
+      var isCurrent=lv.id===id;
+      var cls='sh-lin-item era-'+lv.s+(isCurrent?' current':'');
+      var yrs=(lv.ys||'?')+(lv.ye?' – '+lv.ye:'');
+      h+='<div class="'+cls+'" data-id="'+lv.id+'">';
+      h+='<div class="sh-lin-name">'+esc(lv.n)+'</div>';
+      h+='<div class="sh-lin-meta"><span class="sh-lin-years">'+yrs+'</span>';
+      h+='<span class="sh-lin-status s-'+lv.s+'">'+slabel(lv)+'</span>';
+      h+='</div></div>';
+      if(li<lineage.length-1){
+        // Check if this is a prev/next chain link or just co-located
+        var isChain=(lv.next&&lv.next===lineage[li+1].id)||(lineage[li+1].prev&&lineage[li+1].prev===lv.id);
+        h+='<div class="sh-lin-arrow">'+(isChain?'↓ became':'·')+'</div>';
+      }
     }
-    if(v.next){
-      var nv2=null;for(var ni=0;ni<V.length;ni++){if(V[ni].id===v.next){nv2=V[ni];break;}}
-      if(nv2) h+='<button class="sh-pn sh-rel" data-id="'+nv2.id+'">Became: '+esc(nv2.n)+' →</button>';
-    }
-    h+='</div>';
+    h+='</ul></div>';
   }
   h+='<div class="sh-desc">'+esc(v.d)+'</div>';
 
@@ -786,9 +886,13 @@ document.getElementById('sheetClose').addEventListener('click',closeSheet);
 document.getElementById('sheetBody').addEventListener('click',function(e){
   var node=e.target;
   while(node&&node!==document.getElementById('sheetBody')){
-    if(node.getAttribute&&node.getAttribute('data-id')&&node.className&&node.className.indexOf('sh-rel')>=0){
-      openSheet(node.getAttribute('data-id'));
-      return;
+    if(node.getAttribute&&node.getAttribute('data-id')){
+      var cn=node.className||'';
+      if(cn.indexOf('sh-rel')>=0||cn.indexOf('sh-lin-item')>=0){
+        var tid=node.getAttribute('data-id');
+        if(tid!==selectedId) openSheet(tid);
+        return;
+      }
     }
     node=node.parentNode;
   }
