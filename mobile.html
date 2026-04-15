@@ -32,6 +32,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .fsel{flex:1;min-width:0;background:rgba(26,26,36,.9);border:1px solid var(--bd);border-radius:14px;color:var(--tx);font-size:12px;font-weight:600;padding:7px 26px 7px 11px;outline:none;cursor:pointer;font-family:inherit;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 0l4 5 4-5z' fill='%235a5a6a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center}
 .fsel:focus{border-color:var(--np)}
 .fsel option{background:var(--cd);color:var(--tx)}
+/* CUSTOM CATEGORY DROPDOWN */
+.cat-dd{position:relative;flex:1;min-width:0}
+.cat-dd-btn{width:100%;background:rgba(26,26,36,.9);border:1px solid var(--bd);border-radius:14px;color:var(--tx);font-size:12px;font-weight:600;padding:7px 26px 7px 11px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 0l4 5 4-5z' fill='%235a5a6a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center}
+.cat-dd-btn:focus{border-color:var(--np);outline:none}
+.cat-dd-btn .cd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.cat-dd-list{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--cd);border:1px solid var(--bd);border-radius:12px;overflow:hidden;z-index:1200;max-height:320px;overflow-y:auto}
+.cat-dd.open .cat-dd-list{display:block}
+.cat-dd-item{display:flex;align-items:center;gap:8px;padding:9px 12px;font-size:12px;font-weight:600;color:var(--tx);cursor:pointer;font-family:inherit}
+.cat-dd-item:active,.cat-dd-item:hover{background:rgba(255,255,255,.06)}
+.cat-dd-item.selected{color:var(--np)}
+.cat-dd-item .cd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 /* DECADE ROW */
 #decadeRow{display:flex;gap:5px;margin-top:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
 #decadeRow::-webkit-scrollbar{display:none}
@@ -209,18 +220,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
    <option value="5">5 miles</option>
    <option value="10">10 miles</option>
   </select>
-  <select class="fsel" id="catSelect">
-   <option value="all">All types</option>
-   <option value="food">🍽 Food</option>
-   <option value="music">🎵 Music</option>
-   <option value="nightlife">🍸 Nightlife</option>
-   <option value="culture">🏛 Culture</option>
-   <option value="shop">🛍 Shops</option>
-   <option value="hotel">🏨 Hotels</option>
-   <option value="art">🎨 Art</option>
-   <option value="community">🤝 Community</option>
-   <option value="film">🎬 Film</option>
-  </select>
+  <div class="cat-dd" id="catDd">
+   <div class="cat-dd-btn" id="catDdBtn" tabindex="0"><span class="cd-label">All types</span></div>
+   <div class="cat-dd-list" id="catDdList">
+    <div class="cat-dd-item selected" data-val="all">All types</div>
+    <div class="cat-dd-item" data-val="food"><span class="cd-dot" style="background:#ff7043"></span>Food</div>
+    <div class="cat-dd-item" data-val="music"><span class="cd-dot" style="background:#ff2d7b"></span>Music</div>
+    <div class="cat-dd-item" data-val="nightlife"><span class="cd-dot" style="background:#7c4dff"></span>Nightlife</div>
+    <div class="cat-dd-item" data-val="culture"><span class="cd-dot" style="background:#42a5f5"></span>Culture</div>
+    <div class="cat-dd-item" data-val="shop"><span class="cd-dot" style="background:#26c6da"></span>Shops</div>
+    <div class="cat-dd-item" data-val="hotel"><span class="cd-dot" style="background:#ffb347"></span>Hotels</div>
+    <div class="cat-dd-item" data-val="art"><span class="cd-dot" style="background:#e040fb"></span>Art</div>
+    <div class="cat-dd-item" data-val="community"><span class="cd-dot" style="background:#66bb6a"></span>Community</div>
+    <div class="cat-dd-item" data-val="film"><span class="cd-dot" style="background:#ef5350"></span>Film</div>
+   </div>
+  </div>
   <select class="fsel" id="statusSelect">
    <option value="all">All status</option>
    <option value="active">🟢 Still here</option>
@@ -946,10 +960,31 @@ document.getElementById('radiusSelect').addEventListener('change',function(){
 });
 
 // Category select
-document.getElementById('catSelect').addEventListener('change',function(){
-  activeCat=this.value;
-  update();
-});
+// Category dropdown (custom)
+(function(){
+  var dd=document.getElementById('catDd'),btn=document.getElementById('catDdBtn'),list=document.getElementById('catDdList');
+  var dotColors={food:'#ff7043',music:'#ff2d7b',nightlife:'#7c4dff',culture:'#42a5f5',shop:'#26c6da',hotel:'#ffb347',art:'#e040fb',community:'#66bb6a',film:'#ef5350'};
+  btn.addEventListener('click',function(e){e.stopPropagation();dd.classList.toggle('open')});
+  list.addEventListener('click',function(e){
+    var item=e.target.closest('.cat-dd-item');if(!item)return;
+    var val=item.getAttribute('data-val');
+    activeCat=val;
+    var items=list.querySelectorAll('.cat-dd-item');for(var i=0;i<items.length;i++)items[i].classList.remove('selected');
+    item.classList.add('selected');
+    var label=btn.querySelector('.cd-label');
+    var oldDot=btn.querySelector('.cd-dot');if(oldDot)oldDot.remove();
+    if(val==='all'){label.textContent='All types'}
+    else{
+      var dot=document.createElement('span');dot.className='cd-dot';dot.style.background=dotColors[val]||'#888';
+      btn.insertBefore(dot,label);
+      label.textContent=item.textContent.trim();
+    }
+    dd.classList.remove('open');
+    update();
+  });
+  document.addEventListener('click',function(){dd.classList.remove('open')});
+  dd.addEventListener('click',function(e){e.stopPropagation()});
+})();
 
 // Search
 var st;
