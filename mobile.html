@@ -50,9 +50,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .dpill.active{background:linear-gradient(135deg,var(--np),var(--na));color:var(--bg);border-color:transparent}
 
 /* STATUS COLORS */
+/* Status indicator dots — mirror map marker styles as inline legend */
+.lv-status::before,.sh-status::before,.peek-status::before,.sh-lin-status::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:middle;box-sizing:border-box}
+/* Active = solid filled dot */
+.lv-s-active::before,.sh-s-active::before,.s-active::before{background:currentColor;border:none}
 .lv-s-active{background:rgba(76,175,80,.15);color:var(--green)}
+/* Closed = hollow ring (solid border, no fill) */
+.lv-s-closed::before,.sh-s-closed::before,.s-closed::before{background:transparent;border:2px solid currentColor}
 .lv-s-closed{background:rgba(138,138,154,.1);color:var(--tm)}
+/* Demolished = dashed ring (dashed border, no fill) */
+.lv-s-demolished::before,.sh-s-demolished::before,.s-demolished::before{background:transparent;border:2px dashed currentColor}
 .lv-s-demolished{background:rgba(239,83,80,.12);color:#ef5350}
+/* Transformed = filled dot with dotted border */
+.lv-s-transformed::before,.sh-s-transformed::before,.s-transformed::before{background:color-mix(in srgb,currentColor 40%,transparent);border:2px dotted currentColor}
 .lv-s-transformed{background:rgba(124,77,255,.12);color:#b388ff}
 .sh-s-active{background:rgba(76,175,80,.15);color:var(--green)}
 .sh-s-closed{background:rgba(138,138,154,.12);color:var(--tm)}
