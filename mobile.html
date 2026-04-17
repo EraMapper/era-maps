@@ -43,11 +43,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .cat-dd-item:active,.cat-dd-item:hover{background:rgba(255,255,255,.06)}
 .cat-dd-item.selected{color:var(--np)}
 .cat-dd-item .cd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-/* DECADE ROW */
-#decadeRow{display:flex;gap:5px;margin-top:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
-#decadeRow::-webkit-scrollbar{display:none}
-.dpill{padding:6px 12px;border-radius:14px;font-size:11px;font-weight:700;color:var(--ts);cursor:pointer;border:1px solid var(--bd);background:rgba(26,26,36,.9);white-space:nowrap;font-family:inherit;flex-shrink:0;letter-spacing:.3px}
-.dpill.active{background:linear-gradient(135deg,var(--np),var(--na));color:var(--bg);border-color:transparent}
+/* TIMELINE SLIDER */
+#decadeRow{margin-top:8px;padding:2px 0 5px}
+#yearLabel{text-align:center;font-size:14px;font-weight:800;letter-spacing:1px;color:var(--np);margin-bottom:7px;font-variant-numeric:tabular-nums;line-height:1}
+#yearSlider{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:2px;outline:none;cursor:pointer;background:var(--bd)}
+#yearSlider::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;background:linear-gradient(135deg,var(--np),var(--na));border-radius:50%;cursor:pointer;box-shadow:0 2px 10px rgba(255,45,123,.5);border:2px solid rgba(255,255,255,.15)}
+#yearSlider::-moz-range-thumb{width:22px;height:22px;background:linear-gradient(135deg,var(--np),var(--na));border-radius:50%;cursor:pointer;border:none;box-shadow:0 2px 10px rgba(255,45,123,.5)}
 
 /* STATUS COLORS */
 /* Status indicator dots — mirror map marker styles as inline legend */
@@ -181,6 +182,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .vm.closed{background:transparent!important;opacity:.7;box-shadow:0 0 3px rgba(255,255,255,.15)}
 .vm.demolished{background:transparent!important;opacity:.6;border-style:dashed;box-shadow:0 0 3px rgba(239,83,80,.25)}
 .vm.transformed{opacity:.8;border-style:dotted;box-shadow:0 0 4px rgba(124,77,255,.3)}
+/* Ghost — venue existed before slider year but has since closed */
+.vm.ghost{background:transparent!important;opacity:.45;border-style:dashed!important;box-shadow:none!important}
 /* User location — animated pulse */
 .user-dot{width:14px;height:14px;background:#fff;border:3px solid var(--np);border-radius:50%;box-shadow:0 0 8px rgba(255,45,123,.7)}
 .user-pulse{width:40px;height:40px;border-radius:50%;background:rgba(255,45,123,.15);border:1px solid rgba(255,45,123,.25);animation:pulse 2s ease-out infinite}
@@ -248,21 +251,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
   </select>
  </div>
  <div id="decadeRow">
-  <button class="dpill active" data-decade="all">All eras</button>
-  <button class="dpill" data-decade="pre1900">Pre-1900</button>
-  <button class="dpill" data-decade="1900">1900s</button>
-  <button class="dpill" data-decade="1910">1910s</button>
-  <button class="dpill" data-decade="1920">1920s</button>
-  <button class="dpill" data-decade="1930">1930s</button>
-  <button class="dpill" data-decade="1940">1940s</button>
-  <button class="dpill" data-decade="1950">1950s</button>
-  <button class="dpill" data-decade="1960">1960s</button>
-  <button class="dpill" data-decade="1970">1970s</button>
-  <button class="dpill" data-decade="1980">1980s</button>
-  <button class="dpill" data-decade="1990">1990s</button>
-  <button class="dpill" data-decade="2000">2000s</button>
-  <button class="dpill" data-decade="2010">2010s</button>
-  <button class="dpill" data-decade="2020">2020s</button>
+  <div id="yearLabel">Now</div>
+  <input type="range" id="yearSlider" min="1780" max="2026" value="2026" step="1">
  </div>
 </div>
 
@@ -299,7 +289,7 @@ var V=[{"id":"garden","h":"sunset","n":"Garden of Allah","t":"Legendary Apartmen
 
 // ===== STATE =====
 var userLat=34.0522,userLng=-118.2437;
-var radius=999,activeCat='all',searchTerm='',activeStatus='all',activeDecade='all';
+var radius=999,activeCat='all',searchTerm='',activeStatus='all',activeYear=2026;
 var selectedId=null,hasGPS=false;
 var mapObj=null,mapReady=false,markers={},visibleIds={};
 var tracking=false,watchId=null;
@@ -355,22 +345,18 @@ function findParent(el,cls){
 var STATUS_LABELS={active:'Still here',closed:'Gone',demolished:'Demolished',transformed:'Transformed'};
 function slabel(v){return STATUS_LABELS[v.s]||'Unknown'}
 
-function inDecade(v,dec){
-  if(dec==='all') return true;
-  var ds,de;
-  if(dec==='pre1900'){ds=0;de=1899;}
-  else{ds=parseInt(dec);de=ds+9;}
-  return v.ys<=de && (!v.ye || v.ye>=ds);
-}
-
 function getFiltered(){
   var s=searchTerm.toLowerCase();
   var out=[];
   for(var i=0;i<V.length;i++){
     var v=V[i];
     v._d=hdist(userLat,userLng,v.lat,v.lng);
+    v._ghost=false;
+    // Time filter — hide venues not yet founded
+    if(v.ys>activeYear) continue;
+    // Mark as ghost if closed before slider year
+    v._ghost=!!(v.ye&&v.ye<activeYear);
     if(activeStatus!=='all'&&v.s!==activeStatus) continue;
-    if(!inDecade(v,activeDecade)) continue;
     if(v._d>radius&&radius<900) continue;
     if(activeCat!=='all'&&v.c!==activeCat) continue;
     if(s){
@@ -389,6 +375,7 @@ function renderList(venues){
   var h='';
   for(var i=0;i<venues.length;i++){
     var v=venues[i];
+    if(v._ghost) continue; // ghosts only show on map as rings
     h+='<div class="lv-item" data-id="'+v.id+'">';
     h+='<div class="lv-top">';
     h+='<div class="lv-dot lv-c-'+(v.c||'culture')+(v.s!=='active'?' lv-c-closed':'')+'"></div>';
@@ -564,7 +551,11 @@ function closeSheet(){
 // ===== UPDATE =====
 function update(){
   var f=getFiltered();
-  document.getElementById('countBadge').textContent=f.length+' of 702';
+  var open=0,ghosts=0;
+  for(var i=0;i<f.length;i++){if(f[i]._ghost)ghosts++;else open++;}
+  var badge=open+' of 702';
+  if(ghosts) badge+=' · '+ghosts+' 👻';
+  document.getElementById('countBadge').textContent=badge;
   renderList(f);
   if(mapReady) updateMapMarkers(f);
 }
@@ -573,16 +564,30 @@ function update(){
 function updateMapMarkers(filtered){
   try{
     var nv={};
-    for(var i=0;i<filtered.length;i++) nv[filtered[i].id]=true;
-    // Remove old
+    var ghostSet={};
+    for(var i=0;i<filtered.length;i++){
+      nv[filtered[i].id]=true;
+      if(filtered[i]._ghost) ghostSet[filtered[i].id]=true;
+    }
+    // Remove markers no longer in filtered
     var oldKeys=Object.keys(visibleIds);
     for(var i=0;i<oldKeys.length;i++){
       if(!nv[oldKeys[i]]&&markers[oldKeys[i]]) mapObj.removeLayer(markers[oldKeys[i]]);
     }
-    // Add new
+    // Add new markers or update ghost state on existing
     var newKeys=Object.keys(nv);
     for(var i=0;i<newKeys.length;i++){
-      if(!visibleIds[newKeys[i]]&&markers[newKeys[i]]) markers[newKeys[i]].addTo(mapObj);
+      var kid=newKeys[i];
+      if(!markers[kid]) continue;
+      var mel=markers[kid].getElement();
+      if(mel){
+        if(ghostSet[kid]){
+          if(mel.className.indexOf(' ghost')<0) mel.className+=' ghost';
+        }else{
+          mel.className=mel.className.replace(/\s*ghost/g,'');
+        }
+      }
+      if(!visibleIds[kid]) markers[kid].addTo(mapObj);
     }
     visibleIds=nv;
   }catch(e){}
@@ -1003,16 +1008,37 @@ document.getElementById('statusSelect').addEventListener('change',function(){
   update();
 });
 
-// Decade pills
-document.getElementById('decadeRow').addEventListener('click',function(e){
-  var node=e.target;
-  if(!node.getAttribute||!node.getAttribute('data-decade')) return;
-  activeDecade=node.getAttribute('data-decade');
-  var pills=document.getElementById('decadeRow').children;
-  for(var i=0;i<pills.length;i++) pills[i].className='dpill';
-  node.className='dpill active';
-  update();
-});
+// Timeline slider
+(function(){
+  var slider=document.getElementById('yearSlider');
+  var lbl=document.getElementById('yearLabel');
+  var sel=document.getElementById('statusSelect');
+  var NOW_LABELS={active:'● Still here',closed:'○ Gone',demolished:'◌ Demolished',transformed:'◉ Transformed'};
+  var PAST_LABELS={active:'● Survived',closed:'○ Later closed',demolished:'◌ Later demolished',transformed:'◉ Later transformed'};
+  function updateStatusLabels(isPast){
+    var opts=sel.options;
+    var map=isPast?PAST_LABELS:NOW_LABELS;
+    for(var i=0;i<opts.length;i++){
+      var v=opts[i].value;
+      if(map[v]) opts[i].text=map[v];
+    }
+  }
+  function updateFill(){
+    var pct=((slider.value-1780)/(2026-1780)*100).toFixed(1)+'%';
+    slider.style.background='linear-gradient(to right,var(--np) 0%,var(--np) '+pct+',var(--bd) '+pct+',var(--bd) 100%)';
+  }
+  slider.addEventListener('input',function(){
+    activeYear=parseInt(this.value);
+    var isPast=activeYear<2026;
+    lbl.textContent=isPast?String(activeYear):'Now';
+    updateStatusLabels(isPast);
+    updateFill();
+    update();
+  });
+  // Init
+  updateFill();
+  updateStatusLabels(false);
+})();
 
 // GPS button
 // Toast helper
