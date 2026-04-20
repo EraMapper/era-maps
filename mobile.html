@@ -62,8 +62,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 /* Demolished = solid muted red/slate dot */
 .lv-s-demolished::before,.sh-s-demolished::before,.s-demolished::before{background:#7a4444;border:none}
 .lv-s-demolished{background:rgba(239,83,80,.12);color:#ef5350}
-/* Transformed = filled dot with dotted border */
-.lv-s-transformed::before,.sh-s-transformed::before,.s-transformed::before{background:color-mix(in srgb,currentColor 40%,transparent);border:2px dotted currentColor}
+/* Transformed = 🔄 icon instead of dot */
+.lv-s-transformed::before,.sh-s-transformed::before,.s-transformed::before{content:'🔄';background:none;border:none;width:auto;height:auto;border-radius:0;font-size:9px;line-height:1}
 .lv-s-transformed{background:rgba(124,77,255,.12);color:#b388ff}
 .sh-s-active{background:rgba(76,175,80,.15);color:var(--green)}
 .sh-s-closed{background:rgba(138,138,154,.12);color:var(--tm)}
@@ -181,7 +181,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .vm-community{background:#81c784;border-color:#a5d6a7}
 .vm.closed{background:#6b6b7a!important;border-color:#6b6b7a!important;opacity:.75;box-shadow:0 0 3px rgba(107,107,122,.4)}
 .vm.demolished{background:#7a4444!important;border-color:#7a4444!important;opacity:.7;box-shadow:0 0 3px rgba(122,68,68,.4)}
-.vm.transformed{opacity:.8;border-style:dotted;box-shadow:0 0 4px rgba(124,77,255,.3)}
+.vm.transformed{background:none!important;border:none!important;box-shadow:none!important;opacity:1;font-size:16px;display:flex;align-items:center;justify-content:center;line-height:1}
 /* Ghost — venue existed before slider year but has since closed */
 .vm.ghost{background:#4a4a56!important;border-color:#4a4a56!important;opacity:.45;box-shadow:none!important}
 /* User location — animated pulse */
@@ -244,10 +244,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
   </div>
   <select class="fsel" id="statusSelect">
    <option value="all">All status</option>
-   <option value="active">● Still here</option>
-   <option value="closed">○ Gone</option>
-   <option value="demolished">◌ Demolished</option>
-   <option value="transformed">◉ Transformed</option>
+   <option value="active">🌈 Still here</option>
+   <option value="closed">🩶 Gone</option>
+   <option value="demolished">🟤 Demolished</option>
+   <option value="transformed">🔄 Transformed</option>
   </select>
  </div>
  <div id="decadeRow">
@@ -620,7 +620,10 @@ function tryInitMap(){
       if(v.s==='closed') cls+=' closed';
       else if(v.s==='demolished') cls+=' demolished';
       else if(v.s==='transformed') cls+=' transformed';
-      var icon=L.divIcon({className:cls,html:'',iconSize:[16,16],iconAnchor:[8,8]});
+      var iconHtml=v.s==='transformed'?'🔄':'';
+      var iconSz=v.s==='transformed'?[18,18]:[16,16];
+      var iconAn=v.s==='transformed'?[9,9]:[8,8];
+      var icon=L.divIcon({className:cls,html:iconHtml,iconSize:iconSz,iconAnchor:iconAn});
       var m=L.marker([v.lat,v.lng],{icon:icon,zIndexOffset:v.s==='active'?100:0});
       (function(venue){
         m.on('click',function(){
@@ -1013,8 +1016,8 @@ document.getElementById('statusSelect').addEventListener('change',function(){
   var slider=document.getElementById('yearSlider');
   var lbl=document.getElementById('yearLabel');
   var sel=document.getElementById('statusSelect');
-  var NOW_LABELS={active:'● Still here',closed:'○ Gone',demolished:'◌ Demolished',transformed:'◉ Transformed'};
-  var PAST_LABELS={active:'● Survived',closed:'○ Later closed',demolished:'◌ Later demolished',transformed:'◉ Later transformed'};
+  var NOW_LABELS={active:'🌈 Still here',closed:'🩶 Gone',demolished:'🟤 Demolished',transformed:'🔄 Transformed'};
+  var PAST_LABELS={active:'🌈 Survived',closed:'🩶 Later closed',demolished:'🟤 Later demolished',transformed:'🔄 Later transformed'};
   function updateStatusLabels(isPast){
     var opts=sel.options;
     var map=isPast?PAST_LABELS:NOW_LABELS;
