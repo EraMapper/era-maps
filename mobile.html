@@ -56,11 +56,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 /* Active = solid filled dot */
 .lv-s-active::before,.sh-s-active::before,.s-active::before{background:currentColor;border:none}
 .lv-s-active{background:rgba(76,175,80,.15);color:var(--green)}
-/* Closed = hollow ring (solid border, no fill) */
-.lv-s-closed::before,.sh-s-closed::before,.s-closed::before{background:transparent;border:2px solid currentColor}
+/* Closed = solid muted grey dot */
+.lv-s-closed::before,.sh-s-closed::before,.s-closed::before{background:#6b6b7a;border:none}
 .lv-s-closed{background:rgba(138,138,154,.1);color:var(--tm)}
-/* Demolished = dashed ring (dashed border, no fill) */
-.lv-s-demolished::before,.sh-s-demolished::before,.s-demolished::before{background:transparent;border:2px dashed currentColor}
+/* Demolished = solid muted red/slate dot */
+.lv-s-demolished::before,.sh-s-demolished::before,.s-demolished::before{background:#7a4444;border:none}
 .lv-s-demolished{background:rgba(239,83,80,.12);color:#ef5350}
 /* Transformed = filled dot with dotted border */
 .lv-s-transformed::before,.sh-s-transformed::before,.s-transformed::before{background:color-mix(in srgb,currentColor 40%,transparent);border:2px dotted currentColor}
@@ -125,7 +125,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .lv-c-shop{background:#26c6da;border-color:#26c6da}
 .lv-c-hotel{background:#ffb347;border-color:#ffb347}
 .lv-c-community{background:#66bb6a;border-color:#66bb6a}
-.lv-c-closed{background:transparent!important;opacity:.5}
+.lv-c-closed{background:#6b6b7a!important;border-color:#6b6b7a!important;opacity:.6}
 .lv-info{flex:1;min-width:0}
 .lv-name{font-size:15px;font-weight:700;margin-bottom:2px}
 .lv-meta{font-size:11px;color:var(--ts);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
@@ -179,11 +179,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .vm-shop{background:#4dd0e1;border-color:#80deea}
 .vm-hotel{background:#ffb347;border-color:#ffb347}
 .vm-community{background:#81c784;border-color:#a5d6a7}
-.vm.closed{background:transparent!important;opacity:.7;box-shadow:0 0 3px rgba(255,255,255,.15)}
-.vm.demolished{background:transparent!important;opacity:.6;border-style:dashed;box-shadow:0 0 3px rgba(239,83,80,.25)}
+.vm.closed{background:#6b6b7a!important;border-color:#6b6b7a!important;opacity:.75;box-shadow:0 0 3px rgba(107,107,122,.4)}
+.vm.demolished{background:#7a4444!important;border-color:#7a4444!important;opacity:.7;box-shadow:0 0 3px rgba(122,68,68,.4)}
 .vm.transformed{opacity:.8;border-style:dotted;box-shadow:0 0 4px rgba(124,77,255,.3)}
 /* Ghost — venue existed before slider year but has since closed */
-.vm.ghost{background:transparent!important;opacity:.45;border-style:dashed!important;box-shadow:none!important}
+.vm.ghost{background:#4a4a56!important;border-color:#4a4a56!important;opacity:.45;box-shadow:none!important}
 /* User location — animated pulse */
 .user-dot{width:14px;height:14px;background:#fff;border:3px solid var(--np);border-radius:50%;box-shadow:0 0 8px rgba(255,45,123,.7)}
 .user-pulse{width:40px;height:40px;border-radius:50%;background:rgba(255,45,123,.15);border:1px solid rgba(255,45,123,.25);animation:pulse 2s ease-out infinite}
