@@ -250,6 +250,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 </div>
 
 <script src="venues.js"></script>
+<script src="shared.js"></script>
 <script>
 // ===== DATA (inline, no external dependency) =====
 
@@ -949,7 +950,6 @@ document.getElementById('radiusSelect').addEventListener('change',function(){
 // Category dropdown (custom)
 (function(){
   var dd=document.getElementById('catDd'),btn=document.getElementById('catDdBtn'),list=document.getElementById('catDdList');
-  var dotColors={food:'#5c7cfa',music:'#ff2d7b',nightlife:'#7c4dff',culture:'#42a5f5',shop:'#26c6da',hotel:'#ffb347',community:'#66bb6a'};
   btn.addEventListener('click',function(e){e.stopPropagation();dd.classList.toggle('open')});
   list.addEventListener('click',function(e){
     var item=e.target.closest('.cat-dd-item');if(!item)return;
@@ -1004,18 +1004,12 @@ document.getElementById('statusSelect').addEventListener('change',function(){
     var pct=((slider.value-1890)/(2026-1890)*100).toFixed(1)+'%';
     slider.style.background='linear-gradient(to right,var(--np) 0%,var(--np) '+pct+',var(--bd) '+pct+',var(--bd) 100%)';
   }
-  function setStatusDisabled(disabled){
-    sel.disabled=disabled;
-    sel.style.opacity=disabled?'0.4':'';
-    sel.style.pointerEvents=disabled?'none':'';
-    if(disabled){sel.value='all';activeStatus='all';}
-  }
   slider.addEventListener('input',function(){
     activeYear=parseInt(this.value);
     var isPast=activeYear<2026;
     lbl.textContent=isPast?String(activeYear):'Now';
     updateStatusLabels(isPast);
-    setStatusDisabled(isPast);
+    setStatusDisabled(isPast);if(isPast)activeStatus='all';
     updateFill();
     update();
   });

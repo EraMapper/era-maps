@@ -152,6 +152,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="addPanel"><h3>📍 Add a Location</h3><div class="ab-help">Click map to set coords. Your addition is shared with all users.</div><input id="ap-name" placeholder="Name"><input id="ap-addr" placeholder="Address"><select id="ap-hood"></select><select id="ap-cat"><option value="music">🎵 Music</option><option value="food">🍸 Bar/Restaurant</option><option value="hotel">🏨 Hotel</option><option value="culture">🎭 Culture</option><option value="shop">🛍️ Shop</option></select><input id="ap-year" placeholder="Year founded" type="number"><input id="ap-endyr" placeholder="Year closed (blank if open)"><textarea id="ap-desc" placeholder="Description..."></textarea><input id="ap-wiki" placeholder="Wikipedia article (optional)"><input id="ap-coords" placeholder="Lat, Lng (click map)" readonly><div class="abr"><button class="ab-cancel" onclick="toggleAdd()">Cancel</button><button class="ab-save" onclick="saveUserVenue()">Save</button></div></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="venues.js"></script>
+<script src="shared.js"></script>
 <script>
 var H={sunset:{name:'Sunset Strip',center:[34.094,-118.376],zoom:15,ticks:[1925,1940,1955,1965,1975,1985,1995,2005,2025]},hollywood:{name:'Hollywood',center:[34.1017,-118.3387],zoom:15,ticks:[1910,1922,1935,1950,1965,1977,1990,2010,2025]},chinatown:{name:'Chinatown',center:[34.0622,-118.2398],zoom:16,ticks:[1880,1900,1938,1950,1970,1990,2005,2015,2025]},downtown:{name:'Downtown',center:[34.048,-118.252],zoom:15,ticks:[1890,1910,1926,1940,1960,1980,2000,2015,2025]},venice:{name:'Venice',center:[33.988,-118.472],zoom:15,ticks:[1905,1920,1940,1958,1970,1980,2000,2015,2025]},silverlake:{name:'Silver Lake',center:[34.084,-118.270],zoom:15,ticks:[1920,1935,1955,1966,1977,1990,2001,2015,2025]},losfeliz:{name:'Los Feliz',center:[34.106,-118.292],zoom:15,ticks:[1915,1924,1935,1950,1965,1975,1990,2010,2025]},bevhills:{name:'Beverly Hills',center:[34.073,-118.401],zoom:15,ticks:[1912,1920,1928,1940,1955,1970,1990,2010,2025]},weho:{name:'West Hollywood',center:[34.085,-118.370],zoom:15,ticks:[1920,1940,1957,1970,1979,1991,2005,2015,2025]},ktown:{name:'Koreatown / Mid-Wilshire',center:[34.062,-118.301],zoom:15,ticks:[1920,1930,1945,1960,1975,1992,2005,2015,2025]},fairfax:{name:'Fairfax / Mid-City',center:[34.075,-118.361],zoom:15,ticks:[1920,1934,1945,1960,1975,1985,2000,2015,2025]},santamonica:{name:'Santa Monica / Malibu',center:[34.015,-118.500],zoom:13,ticks:[1910,1925,1940,1955,1965,1980,2000,2015,2025]},valley:{name:'The Valley',center:[34.165,-118.370],zoom:13,ticks:[1915,1930,1945,1955,1970,1985,2000,2015,2025]},
   noho:{name:'North Hollywood',center:[34.1706,-118.3756],zoom:14,ticks:[1910,1930,1945,1960,1975,1990,2000,2015,2025]},
@@ -239,7 +240,6 @@ function loadWikiGallery(slug,cb){
   document.head.appendChild(s);setTimeout(function(){try{s.remove()}catch(e){}},11000);
 }
 var cY=1985,cH='sunset',map,allMkrs={},drag=false,aF='all',aS='all',addMode=false,userVenues=[],userPhotos={},panelSession=0;
-var dotColors={food:'#5c7cfa',music:'#ff2d7b',nightlife:'#7c4dff',culture:'#42a5f5',shop:'#26c6da',hotel:'#ffb347',community:'#66bb6a'};
 var MN=1890,MX=2026;
 
 function waitForLeaflet(cb){if(typeof L!=='undefined')cb();else setTimeout(function(){waitForLeaflet(cb)},50);}
@@ -811,7 +811,7 @@ function setY(y){
   var e=eras[c]||{l:'',b:H[cH].name};
   document.getElementById('eL').textContent=e.l;
   updateEraTint();
-  var sel=document.getElementById('statusSelect');if(sel){var isPast=cY<MX;sel.disabled=isPast;sel.style.opacity=isPast?'0.4':'';sel.style.pointerEvents=isPast?'none':'';if(isPast){sel.value='all';aS='all';}}
+  var isPast=cY<MX;setStatusDisabled(isPast);if(isPast)aS='all';
 }
 
 function toggleAdd(){
