@@ -257,7 +257,7 @@ function loadWikiGallery(slug,cb){
 }
 var cY=1985,cH='sunset',map,allMkrs={},drag=false,aF='all',aS='all',addMode=false,userVenues=[],userPhotos={},panelSession=0;
 var dotColors={food:'#5c7cfa',music:'#ff2d7b',nightlife:'#7c4dff',culture:'#42a5f5',shop:'#26c6da',hotel:'#ffb347',community:'#66bb6a'};
-var MN=1870,MX=2025;
+var MN=1890,MX=2026;
 
 function waitForLeaflet(cb){if(typeof L!=='undefined')cb();else setTimeout(function(){waitForLeaflet(cb)},50);}
 
@@ -269,7 +269,7 @@ function init(){
   L.control.zoom({position:'bottomleft'}).addTo(map);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd'}).addTo(map);
   initEraTint();
-  buildHB();buildHoodSelect();createAllMarkers();initS();initSearch();updateTk();setY(1985);updateSV();updateVis();
+  buildHB();buildHoodSelect();createAllMarkers();initS();initSearch();updateTk();setY(2026);updateSV();updateVis();
   updateSearchCount();
   var catDd=document.getElementById('catDd'),catDdBtn=document.getElementById('catDdBtn'),catDdList=document.getElementById('catDdList');
   catDdBtn.addEventListener('click',function(e){e.stopPropagation();catDd.classList.toggle('open');});
@@ -824,6 +824,7 @@ function setY(y){
   var e=eras[c]||{l:'',b:H[cH].name};
   document.getElementById('eL').textContent=e.l;
   updateEraTint();
+  var sel=document.getElementById('statusSelect');if(sel){var isPast=cY<MX;sel.disabled=isPast;sel.style.opacity=isPast?'0.4':'';sel.style.pointerEvents=isPast?'none':'';if(isPast){sel.value='all';aS='all';}}
 }
 
 function toggleAdd(){
