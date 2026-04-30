@@ -7,9 +7,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0a0f">
 <title>Era Maps — LA Field Guide</title>
+<link rel="stylesheet" href="shared.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-:root{--bg:#0a0a0f;--sf:#111118;--cd:#1a1a24;--bd:#2a2a3a;--tx:#e8e6e3;--ts:#8a8a9a;--tm:#5a5a6a;--np:#ff2d7b;--na:#ffb347;--green:#4caf50}
+:root{--sf:#111118;--green:#4caf50}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;background:var(--bg);color:var(--tx);height:100dvh;width:100vw;overflow:hidden;position:relative}
 
@@ -29,20 +30,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 
 /* FILTER ROW */
 #filterRow{display:flex;gap:6px;margin-top:8px;align-items:center}
-.fsel{flex:1;min-width:0;background:rgba(26,26,36,.9);border:1px solid var(--bd);border-radius:14px;color:var(--tx);font-size:12px;font-weight:600;padding:7px 26px 7px 11px;outline:none;cursor:pointer;font-family:inherit;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 0l4 5 4-5z' fill='%235a5a6a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center}
-.fsel:focus{border-color:var(--np)}
-.fsel option{background:var(--cd);color:var(--tx)}
-/* CUSTOM CATEGORY DROPDOWN */
-.cat-dd{position:relative;flex:1;min-width:0}
-.cat-dd-btn{width:100%;background:rgba(26,26,36,.9);border:1px solid var(--bd);border-radius:14px;color:var(--tx);font-size:12px;font-weight:600;padding:7px 26px 7px 11px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 0l4 5 4-5z' fill='%235a5a6a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center}
-.cat-dd-btn:focus{border-color:var(--np);outline:none}
-.cat-dd-btn .cd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.cat-dd-list{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--cd);border:1px solid var(--bd);border-radius:12px;overflow:hidden;z-index:1200;max-height:320px;overflow-y:auto}
-.cat-dd.open .cat-dd-list{display:block}
-.cat-dd-item{display:flex;align-items:center;gap:8px;padding:9px 12px;font-size:12px;font-weight:600;color:var(--tx);cursor:pointer;font-family:inherit}
-.cat-dd-item:active,.cat-dd-item:hover{background:rgba(255,255,255,.06)}
-.cat-dd-item.selected{color:var(--np)}
-.cat-dd-item .cd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.fsel{flex:1;min-width:0}
+.cat-dd{flex:1;min-width:0}
 /* TIMELINE SLIDER */
 #decadeRow{margin-top:8px;padding:10px 0 14px}
 #yearLabel{text-align:center;font-size:14px;font-weight:800;letter-spacing:1px;color:var(--np);margin-bottom:7px;font-variant-numeric:tabular-nums;line-height:1}
@@ -50,25 +39,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 #yearSlider::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;background:linear-gradient(135deg,var(--np),var(--na));border-radius:50%;cursor:pointer;box-shadow:0 2px 10px rgba(255,45,123,.5);border:2px solid rgba(255,255,255,.15)}
 #yearSlider::-moz-range-thumb{width:22px;height:22px;background:linear-gradient(135deg,var(--np),var(--na));border-radius:50%;cursor:pointer;border:none;box-shadow:0 2px 10px rgba(255,45,123,.5)}
 
-/* STATUS COLORS */
-/* Status indicator dots — mirror map marker styles as inline legend */
-.lv-status::before,.sh-status::before,.peek-status::before,.sh-lin-status::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:middle;box-sizing:border-box}
-/* Active = solid filled dot */
-.lv-s-active::before,.sh-s-active::before,.s-active::before{background:currentColor;border:none}
-.lv-s-active{background:rgba(76,175,80,.15);color:var(--green)}
-/* Closed = solid muted grey dot */
-.lv-s-closed::before,.sh-s-closed::before,.s-closed::before{background:#8b7355;border:none}
-.lv-s-closed{background:rgba(138,138,154,.1);color:var(--tm)}
-/* Demolished = solid muted red/slate dot */
-.lv-s-demolished::before,.sh-s-demolished::before,.s-demolished::before{background:#7a4444;border:none}
-.lv-s-demolished{background:rgba(239,83,80,.12);color:#ef5350}
-/* Transformed = 🔄 icon instead of dot */
-.lv-s-transformed::before,.sh-s-transformed::before,.s-transformed::before{content:'🔄';background:none;border:none;width:auto;height:auto;border-radius:0;font-size:9px;line-height:1}
-.lv-s-transformed{background:rgba(124,77,255,.12);color:#b388ff}
-.sh-s-active{background:rgba(76,175,80,.15);color:var(--green)}
-.sh-s-closed{background:rgba(138,138,154,.12);color:var(--tm)}
-.sh-s-demolished{background:rgba(239,83,80,.12);color:#ef5350}
-.sh-s-transformed{background:rgba(124,77,255,.12);color:#b388ff}
+
 .sh-prevnext{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
 .sh-pn{font-size:11px;padding:5px 10px;border-radius:10px;background:rgba(124,77,255,.1);color:#b388ff;border:1px solid rgba(124,77,255,.25);cursor:pointer;font-family:inherit}
 /* ADDRESS LINEAGE */
@@ -125,7 +96,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .lv-c-shop{background:#26c6da;border-color:#26c6da}
 .lv-c-hotel{background:#ffb347;border-color:#ffb347}
 .lv-c-community{background:#66bb6a;border-color:#66bb6a}
-.lv-c-closed{background:#8b7355!important;border-color:#8b7355!important;opacity:.6}
 .lv-info{flex:1;min-width:0}
 .lv-name{font-size:15px;font-weight:700;margin-bottom:2px}
 .lv-meta{font-size:11px;color:var(--ts);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
@@ -179,11 +149,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .vm-shop{background:#4dd0e1;border-color:#80deea}
 .vm-hotel{background:#ffb347;border-color:#ffb347}
 .vm-community{background:#81c784;border-color:#a5d6a7}
-.vm.closed{background:#8b7355!important;border-color:#8b7355!important;opacity:.85;box-shadow:0 0 3px rgba(139,115,85,.4)}
-.vm.demolished{background:#7a4444!important;border-color:#7a4444!important;opacity:.7;box-shadow:0 0 3px rgba(122,68,68,.4)}
-.vm.transformed{background:none!important;border:none!important;box-shadow:none!important;opacity:1;font-size:16px;display:flex;align-items:center;justify-content:center;line-height:1}
-/* Ghost — venue existed before slider year but has since closed */
-.vm.ghost{background:#8b7355!important;border-color:#8b7355!important;opacity:.70;box-shadow:none!important}
 /* User location — animated pulse */
 .user-dot{width:14px;height:14px;background:#fff;border:3px solid var(--np);border-radius:50%;box-shadow:0 0 8px rgba(255,45,123,.7)}
 .user-pulse{width:40px;height:40px;border-radius:50%;background:rgba(255,45,123,.15);border:1px solid rgba(255,45,123,.25);animation:pulse 2s ease-out infinite}

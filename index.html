@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Era Maps — Los Angeles</title>
+<link rel="stylesheet" href="shared.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-:root{--np:#ff2d7b;--na:#ffb347;--nb:#00d4ff;--bg:#0a0a0f;--sf:#13131a;--cd:#1a1a24;--bd:#2a2a3a;--tx:#e8e6e3;--ts:#8a8a9a;--tm:#5a5a6a;--red:#f85149}
+:root{--nb:#00d4ff;--sf:#13131a;--red:#f85149}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--tx);overflow:hidden}
 #map{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
@@ -13,10 +14,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .leaflet-control-zoom a:hover{background:rgba(40,40,55,.95)!important;color:var(--np)!important}
 .leaflet-control-zoom{border:1px solid var(--bd)!important;border-radius:8px!important;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.4)!important;margin-bottom:140px!important;margin-left:192px!important}
 .leaflet-tile-pane{filter:saturate(0.15) brightness(0.45) contrast(1.3) invert(1) hue-rotate(200deg) sepia(0);transition:filter 1.6s ease}
-.leaflet-popup-content-wrapper{background:var(--cd)!important;border:1px solid var(--bd)!important;border-radius:12px!important;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 30px rgba(255,45,123,.1)!important;color:var(--tx)!important;padding:0!important;overflow:hidden}
-.leaflet-popup-content{margin:0!important;min-width:200px!important;max-width:240px!important;overflow:hidden!important;word-wrap:break-word}
-.leaflet-popup-tip{background:var(--cd)!important;border:1px solid var(--bd)!important}
-.leaflet-popup-close-button{color:var(--ts)!important;font-size:20px!important;padding:6px 8px!important}
 #intro{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transition:opacity .6s}
 #intro.hidden{opacity:0;pointer-events:none}
 .it{font-size:56px;font-weight:900;letter-spacing:-1px;background:linear-gradient(135deg,var(--np),var(--na));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -28,9 +25,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .ln-logo{font-size:26px;font-weight:900;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--np),var(--na));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:18px}
 #citySelect{background:rgba(26,26,36,.85);backdrop-filter:blur(12px);border:1px solid var(--bd);border-radius:20px;color:var(--ts);font-size:11px;letter-spacing:1px;cursor:pointer;padding:7px 14px;-webkit-appearance:none;appearance:none;outline:none}
 #citySelect option{background:var(--cd);color:var(--tx)}
-.fsel{background:rgba(26,26,36,.9);backdrop-filter:blur(12px);border:1px solid var(--bd);border-radius:14px;color:var(--tx);font-size:11px;font-weight:600;padding:7px 26px 7px 11px;outline:none;cursor:pointer;font-family:inherit;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 0l4 5 4-5z' fill='%235a5a6a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center}
-.fsel:focus{border-color:var(--np)}
-.fsel option{background:var(--cd);color:var(--tx)}
 .ln-label{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--tm);margin-bottom:6px;font-weight:600}
 #hoodBar{display:flex;flex-direction:column;gap:3px;flex:1 1 auto;overflow-y:auto;min-height:0;padding-bottom:32px;mask-image:linear-gradient(to bottom,black 92%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,black 92%,transparent 100%);scrollbar-width:none}
 #hoodBar::-webkit-scrollbar{display:none}
@@ -43,22 +37,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .rg-hdr:hover{background:rgba(255,255,255,.04)}
 .rg-label{font-size:9px;font-weight:700;letter-spacing:2px;color:var(--tm);text-transform:uppercase}
 .rg-arrow{font-size:9px;color:var(--tm);opacity:.7}
-.cat-dd{position:relative;width:160px}
-.cat-dd-btn{width:100%;background:rgba(26,26,36,.85);backdrop-filter:blur(12px);border:1px solid var(--bd);border-radius:14px;color:var(--tx);font-size:11px;font-weight:600;padding:7px 26px 7px 11px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 0l4 5 4-5z' fill='%235a5a6a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center}
-.cat-dd-btn:focus{border-color:var(--np);outline:none}
-.cat-dd-btn .cd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.cat-dd-list{display:none;position:absolute;top:calc(100% + 4px);right:0;left:0;background:var(--cd);border:1px solid var(--bd);border-radius:12px;overflow:hidden;z-index:1200;max-height:320px;overflow-y:auto}
-.cat-dd.open .cat-dd-list{display:block}
-.cat-dd-item{display:flex;align-items:center;gap:8px;padding:9px 12px;font-size:11px;font-weight:600;color:var(--tx);cursor:pointer;font-family:inherit}
-.cat-dd-item:hover{background:rgba(255,255,255,.06)}
-.cat-dd-item.selected{color:var(--np)}
-.cat-dd-item .cd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.cat-dd{width:160px}
 #searchWrap{position:fixed;top:14px;right:14px;z-index:101;display:flex;gap:6px;align-items:center}
 #searchBox{width:0;padding:0;background:rgba(26,26,36,.92);backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:20px;color:var(--tx);font-size:13px;transition:width .3s,padding .3s;overflow:hidden;outline:none}
 #searchBox.open{width:240px;padding:8px 16px}
 #searchBox::placeholder{color:var(--tm)}
-#searchBtn{width:36px;height:36px;border-radius:50%;background:rgba(26,26,36,.85);backdrop-filter:blur(12px);border:1px solid var(--bd);color:var(--ts);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
-#searchBtn:hover{border-color:var(--np);color:var(--np)}
 #searchResults{position:fixed;top:100px;right:14px;z-index:101;width:280px;max-height:340px;overflow-y:auto;background:rgba(19,19,26,.95);backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:14px;display:none;box-shadow:0 20px 40px rgba(0,0,0,.5)}
 #searchResults.show{display:block}
 .sr-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--bd);transition:.15s}
