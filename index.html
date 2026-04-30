@@ -40,11 +40,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .rg-hdr:hover{background:rgba(255,255,255,.04)}
 .rg-label{font-size:9px;font-weight:700;letter-spacing:2px;color:var(--tm);text-transform:uppercase}
 .rg-arrow{font-size:9px;color:var(--tm);opacity:.7}
-#filterBar{position:fixed;top:58px;right:14px;z-index:100;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
-.fc{padding:7px 14px;border-radius:20px;background:rgba(26,26,36,.85);backdrop-filter:blur(12px);border:1px solid var(--bd);font-size:11px;cursor:pointer;transition:.2s;white-space:nowrap;display:flex;align-items:center;gap:5px}
-.fc:hover{border-color:var(--np);background:rgba(255,45,123,.08)}
-.fc.active{background:linear-gradient(135deg,var(--np),var(--na));color:var(--bg);border-color:transparent}
-.fc-icon{font-size:13px}.fc-label{font-weight:600}
+#filterBar{position:fixed;top:58px;right:14px;z-index:100}
+.cat-dd{position:relative;width:160px}
+.cat-dd-btn{width:100%;background:rgba(26,26,36,.85);backdrop-filter:blur(12px);border:1px solid var(--bd);border-radius:14px;color:var(--tx);font-size:11px;font-weight:600;padding:7px 26px 7px 11px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 0l4 5 4-5z' fill='%235a5a6a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center}
+.cat-dd-btn:focus{border-color:var(--np);outline:none}
+.cat-dd-btn .cd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.cat-dd-list{display:none;position:absolute;top:calc(100% + 4px);right:0;left:0;background:var(--cd);border:1px solid var(--bd);border-radius:12px;overflow:hidden;z-index:1200;max-height:320px;overflow-y:auto}
+.cat-dd.open .cat-dd-list{display:block}
+.cat-dd-item{display:flex;align-items:center;gap:8px;padding:9px 12px;font-size:11px;font-weight:600;color:var(--tx);cursor:pointer;font-family:inherit}
+.cat-dd-item:hover{background:rgba(255,255,255,.06)}
+.cat-dd-item.selected{color:var(--np)}
+.cat-dd-item .cd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 #searchWrap{position:fixed;top:14px;right:14px;z-index:101;display:flex;gap:6px;align-items:center}
 #searchBox{width:0;padding:0;background:rgba(26,26,36,.92);backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:20px;color:var(--tx);font-size:13px;transition:width .3s,padding .3s;overflow:hidden;outline:none}
 #searchBox.open{width:240px;padding:8px 16px}
@@ -154,12 +160,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div id="hoodBar"></div>
 </div>
 <div id="filterBar">
-  <div class="fc active" data-cat="all"><span class="fc-label">All</span></div>
-  <div class="fc" data-cat="music"><span class="fc-label">Music</span></div>
-  <div class="fc" data-cat="food"><span class="fc-label">Bars & Food</span></div>
-  <div class="fc" data-cat="hotel"><span class="fc-label">Hotels</span></div>
-  <div class="fc" data-cat="culture"><span class="fc-label">Culture</span></div>
-  <div class="fc" data-cat="shop"><span class="fc-label">Shops</span></div>
+  <div class="cat-dd" id="catDd">
+   <div class="cat-dd-btn" id="catDdBtn" tabindex="0"><span class="cd-label">All types</span></div>
+   <div class="cat-dd-list" id="catDdList">
+    <div class="cat-dd-item selected" data-val="all">All types</div>
+    <div class="cat-dd-item" data-val="food"><span class="cd-dot" style="background:#5c7cfa"></span>Food</div>
+    <div class="cat-dd-item" data-val="music"><span class="cd-dot" style="background:#ff2d7b"></span>Music</div>
+    <div class="cat-dd-item" data-val="nightlife"><span class="cd-dot" style="background:#7c4dff"></span>Nightlife</div>
+    <div class="cat-dd-item" data-val="culture"><span class="cd-dot" style="background:#42a5f5"></span>Culture</div>
+    <div class="cat-dd-item" data-val="shop"><span class="cd-dot" style="background:#26c6da"></span>Shops</div>
+    <div class="cat-dd-item" data-val="hotel"><span class="cd-dot" style="background:#ffb347"></span>Hotels</div>
+    <div class="cat-dd-item" data-val="community"><span class="cd-dot" style="background:#66bb6a"></span>Community</div>
+   </div>
+  </div>
 </div>
 <div id="searchWrap"><select id="citySelect"><option value="la" selected>🌴 Los Angeles</option><option value="ny" disabled>🗽 New York — coming soon</option><option value="lon" disabled>🇬🇧 London — coming soon</option><option value="tok" disabled>⛩️ Tokyo — coming soon</option></select><input type="text" id="searchBox" placeholder="Search places..."><button id="searchBtn">🔍</button></div>
 <div id="searchResults"></div>
@@ -256,6 +269,7 @@ function loadWikiGallery(slug,cb){
   document.head.appendChild(s);setTimeout(function(){try{s.remove()}catch(e){}},11000);
 }
 var cY=1985,cH='sunset',map,allMkrs={},drag=false,aF='all',addMode=false,userVenues=[],userPhotos={},panelSession=0;
+var dotColors={food:'#5c7cfa',music:'#ff2d7b',nightlife:'#7c4dff',culture:'#42a5f5',shop:'#26c6da',hotel:'#ffb347',community:'#66bb6a'};
 var MN=1870,MX=2025;
 
 function waitForLeaflet(cb){if(typeof L!=='undefined')cb();else setTimeout(function(){waitForLeaflet(cb)},50);}
@@ -270,9 +284,22 @@ function init(){
   initEraTint();
   buildHB();buildHoodSelect();createAllMarkers();initS();initSearch();updateTk();setY(1985);updateSV();updateVis();
   updateSearchCount();
-  document.querySelectorAll('.fc').forEach(function(c){
-    c.onclick=function(){document.querySelectorAll('.fc').forEach(function(x){x.classList.remove('active')});c.classList.add('active');aF=c.dataset.cat;updateVis();};
+  var catDd=document.getElementById('catDd'),catDdBtn=document.getElementById('catDdBtn'),catDdList=document.getElementById('catDdList');
+  catDdBtn.addEventListener('click',function(e){e.stopPropagation();catDd.classList.toggle('open');});
+  catDdList.addEventListener('click',function(e){
+    var item=e.target.closest('.cat-dd-item');if(!item)return;
+    var val=item.dataset.val,label=catDdBtn.querySelector('.cd-label');
+    catDdList.querySelectorAll('.cat-dd-item').forEach(function(x){x.classList.remove('selected');});
+    item.classList.add('selected');
+    aF=val;
+    if(val==='all'){label.textContent='All types';var od=catDdBtn.querySelector('.cd-dot');if(od)od.remove();}
+    else{label.textContent=item.textContent.trim();
+      var dot=catDdBtn.querySelector('.cd-dot');if(!dot){dot=document.createElement('span');dot.className='cd-dot';catDdBtn.insertBefore(dot,label);}
+      dot.style.background=dotColors[val]||'#888';}
+    catDd.classList.remove('open');
+    updateVis();
   });
+  document.addEventListener('click',function(){catDd.classList.remove('open');});
   document.getElementById('addBtn').onclick=function(){toggleAdd()};
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeSP();if(addMode)toggleAdd();}});
   map.on('click',function(e){
@@ -352,7 +379,7 @@ function createAllMarkers(){
   all.forEach(function(v){
     if(!v||!v.id)return;
     if(allMkrs[v.id])return;
-    var m=L.circleMarker([v.lat,v.lng],{radius:7,fillColor:v.co,fillOpacity:0.85,color:'#fff',weight:2,opacity:0.9});
+    var m=L.circleMarker([v.lat,v.lng],{radius:7,fillColor:dotColors[v.c]||'#888',fillOpacity:0.85,color:'#fff',weight:2,opacity:0.9});
     // Click → side panel directly
     m.on('click',function(){map.closePopup();openSP(v.id);highlightMarker(v.id);});
     // Hover popup card
