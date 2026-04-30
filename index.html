@@ -360,7 +360,7 @@ function updateTk(){
   document.querySelectorAll('.stk span').forEach(function(s){s.onclick=function(){setY(+s.dataset.y);updateSV();updateVis();}});
 }
 
-function isVis(v){if(v.h!==cH)return false;if(cY<v.ys)return false;if(v.s!=='closed'&&v.ye&&cY>v.ye)return false;if(aF!=='all'&&v.c!==aF)return false;if(aS!=='all'&&v.s!==aS)return false;return true;}
+function isVis(v){if(v.h!==cH)return false;if(cY<v.ys)return false;if(aF!=='all'&&v.c!==aF)return false;if(aS!=='all'&&v.s!==aS)return false;return true;}
 
 function createAllMarkers(){
   var all=V.concat(userVenues);
@@ -475,17 +475,20 @@ function updateVis(){
   var all=V.concat(userVenues);var vis=0,hc=all.filter(function(v){return v.h===cH}).length;
   all.forEach(function(v){
     if(!v||!v.id)return;
+    v._ghost=!!(v.ye&&v.ye<cY);
     var m=allMkrs[v.id];if(!m)return;
     var shouldShow=isVis(v);
     var onMap=map.hasLayer(m);
+    var fc=v._ghost?'#4a4a56':(v.s==='closed'?'#6b6b7a':dotColors[v.c]||'#888');
+    var fo=v._ghost?0.45:(v.s==='closed'?0.75:0.85);
     if(shouldShow&&!onMap){
       vis++;m.addTo(map);
-      m.setStyle({fillColor:v.s==='closed'?'#6b6b7a':dotColors[v.c]||'#888'});
+      m.setStyle({fillColor:fc,fillOpacity:fo});
       // Entrance animation
       var el=m.getElement?m.getElement():null;
       if(el){var path=el.querySelector('path')||el;path.classList.add('marker-enter');
         setTimeout(function(){path.classList.remove('marker-enter')},400);}
-    }else if(shouldShow&&onMap){vis++;m.setStyle({fillColor:v.s==='closed'?'#6b6b7a':dotColors[v.c]||'#888'});}
+    }else if(shouldShow&&onMap){vis++;m.setStyle({fillColor:fc,fillOpacity:fo});}
     else if(!shouldShow&&onMap){map.removeLayer(m);}
   });
   document.getElementById('vC').textContent=vis+'/'+hc+' visible';
