@@ -44,7 +44,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .cat-dd-item.selected{color:var(--np)}
 .cat-dd-item .cd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 /* TIMELINE SLIDER */
-#decadeRow{margin-top:8px;padding:2px 0 5px}
+#decadeRow{margin-top:8px;padding:10px 0 14px}
 #yearLabel{text-align:center;font-size:14px;font-weight:800;letter-spacing:1px;color:var(--np);margin-bottom:7px;font-variant-numeric:tabular-nums;line-height:1}
 #yearSlider{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:2px;outline:none;cursor:pointer;background:var(--bd)}
 #yearSlider::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;background:linear-gradient(135deg,var(--np),var(--na));border-radius:50%;cursor:pointer;box-shadow:0 2px 10px rgba(255,45,123,.5);border:2px solid rgba(255,255,255,.15)}
@@ -224,6 +224,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
  <div id="filterRow">
   <select class="fsel" id="radiusSelect">
    <option value="999">All distances</option>
+   <option value="0.5">½ mile</option>
    <option value="1">1 mile</option>
    <option value="3">3 miles</option>
    <option value="5">5 miles</option>
@@ -252,7 +253,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
  </div>
  <div id="decadeRow">
   <div id="yearLabel">Now</div>
-  <input type="range" id="yearSlider" min="1780" max="2026" value="2026" step="1">
+  <input type="range" id="yearSlider" min="1890" max="2026" value="2026" step="1">
  </div>
 </div>
 
@@ -1035,20 +1036,28 @@ document.getElementById('statusSelect').addEventListener('change',function(){
     }
   }
   function updateFill(){
-    var pct=((slider.value-1780)/(2026-1780)*100).toFixed(1)+'%';
+    var pct=((slider.value-1890)/(2026-1890)*100).toFixed(1)+'%';
     slider.style.background='linear-gradient(to right,var(--np) 0%,var(--np) '+pct+',var(--bd) '+pct+',var(--bd) 100%)';
+  }
+  function setStatusDisabled(disabled){
+    sel.disabled=disabled;
+    sel.style.opacity=disabled?'0.4':'';
+    sel.style.pointerEvents=disabled?'none':'';
+    if(disabled){sel.value='all';activeStatus='all';}
   }
   slider.addEventListener('input',function(){
     activeYear=parseInt(this.value);
     var isPast=activeYear<2026;
     lbl.textContent=isPast?String(activeYear):'Now';
     updateStatusLabels(isPast);
+    setStatusDisabled(isPast);
     updateFill();
     update();
   });
   // Init
   updateFill();
   updateStatusLabels(false);
+  setStatusDisabled(false);
 })();
 
 // GPS button
