@@ -141,6 +141,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 #gpsBtn{position:fixed;bottom:25px;right:110px;z-index:101;width:40px;height:40px;border-radius:8px;background:rgba(26,26,36,.85);backdrop-filter:blur(12px);border:1px solid var(--bd);color:var(--ts);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.4)}
 #gpsBtn:hover{background:rgba(40,40,55,.95);color:var(--np)}
 #gpsBtn.tracking{border-color:var(--np);color:var(--np)}
+#listToggle{padding:3px 8px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:none;border:1px solid var(--bd);border-radius:6px;color:var(--tm);cursor:pointer;margin-bottom:12px;align-self:flex-start;transition:.15s}
+#listToggle.active{background:linear-gradient(135deg,var(--np),var(--na));color:var(--bg);border-color:transparent}
+#listPanel{position:fixed;left:150px;top:0;bottom:100px;width:240px;z-index:99;background:rgba(10,10,15,.96);backdrop-filter:blur(12px);border-right:1px solid var(--bd);display:none;flex-direction:column;overflow:hidden}
+#listPanel.show{display:flex}
+#listCount{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--tm);padding:14px 12px 8px;flex-shrink:0;border-bottom:1px solid var(--bd)}
+#listContent{overflow-y:auto;flex:1;padding:8px 8px 16px;scrollbar-width:none}
+#listContent::-webkit-scrollbar{display:none}
+.lv-item{background:rgba(26,26,36,.5);border:1px solid transparent;border-radius:10px;padding:8px 10px;margin-bottom:5px;cursor:pointer;transition:.15s}
+.lv-item:hover{border-color:var(--bd);background:rgba(26,26,36,.9)}
+.lv-top{display:flex;align-items:flex-start;gap:8px}
+.lv-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;border:2px solid}
+.lv-c-food{background:#5c7cfa;border-color:#5c7cfa}
+.lv-c-music{background:#ff2d7b;border-color:#ff2d7b}
+.lv-c-nightlife{background:#7c4dff;border-color:#7c4dff}
+.lv-c-culture{background:#42a5f5;border-color:#42a5f5}
+.lv-c-shop{background:#26c6da;border-color:#26c6da}
+.lv-c-hotel{background:#ffb347;border-color:#ffb347}
+.lv-c-community{background:#66bb6a;border-color:#66bb6a}
+.lv-info{flex:1;min-width:0}
+.lv-name{font-size:12px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lv-meta{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.lv-status{font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px}
+.lv-type{font-size:10px;color:var(--ts)}
 </style>
 </head>
 <body>
@@ -148,9 +171,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="intro"><div class="it">ERA MAPS</div><div class="is">Los Angeles Through Time</div><div id="introC" style="color:var(--ts);font-size:13px;margin-bottom:20px"></div><button class="ib" id="enterBtn">EXPLORE</button></div>
 <div id="leftNav">
   <div class="ln-logo">ERA MAPS</div>
+  <button id="listToggle">☰ List</button>
   <div class="ln-label">Neighborhoods</div>
   <div id="hoodBar"></div>
 </div>
+<div id="listPanel"><div id="listCount"></div><div id="listContent"></div></div>
 <div id="searchWrap"><input type="text" id="searchBox" placeholder="Search places..."><button id="searchBtn">🔍</button></div>
 <div id="controlsWrap"><select id="citySelect"><option value="la" selected>🌴 Los Angeles</option><option value="ny" disabled>🗽 New York — coming soon</option><option value="lon" disabled>🇬🇧 London — coming soon</option><option value="tok" disabled>⛩️ Tokyo — coming soon</option></select><div class="cat-dd" id="catDd"><div class="cat-dd-btn" id="catDdBtn" tabindex="0"><span class="cd-label">All types</span></div><div class="cat-dd-list" id="catDdList"><div class="cat-dd-item selected" data-val="all">All types</div><div class="cat-dd-item" data-val="food"><span class="cd-dot" style="background:#5c7cfa"></span>Food</div><div class="cat-dd-item" data-val="music"><span class="cd-dot" style="background:#ff2d7b"></span>Music</div><div class="cat-dd-item" data-val="nightlife"><span class="cd-dot" style="background:#7c4dff"></span>Nightlife</div><div class="cat-dd-item" data-val="culture"><span class="cd-dot" style="background:#42a5f5"></span>Culture</div><div class="cat-dd-item" data-val="shop"><span class="cd-dot" style="background:#26c6da"></span>Shops</div><div class="cat-dd-item" data-val="hotel"><span class="cd-dot" style="background:#ffb347"></span>Hotels</div><div class="cat-dd-item" data-val="community"><span class="cd-dot" style="background:#66bb6a"></span>Community</div></div></div><select class="fsel" id="statusSelect"><option value="all">All status</option><option value="active">🌈 Still here</option><option value="closed">🩶 Gone</option><option value="demolished">🟤 Demolished</option><option value="transformed">🔄 Transformed</option></select><button id="addBtn" title="Add a location">+</button></div>
 <div id="searchResults"></div>
@@ -248,7 +273,29 @@ function loadWikiGallery(slug,cb){
   document.head.appendChild(s);setTimeout(function(){try{s.remove()}catch(e){}},11000);
 }
 var cY=1985,cH='sunset',map,allMkrs={},drag=false,aF='all',aS='all',addMode=false,userVenues=[],userPhotos={},panelSession=0;
-var allView=false,suppressZoomCheck=false;
+var allView=false,suppressZoomCheck=false,listOpen=false;
+function esc(s){return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):''}
+var STATUS_LABELS={active:'Still here',closed:'Gone',demolished:'Demolished',transformed:'Transformed'};
+function slabel(v){return STATUS_LABELS[v.s]||v.s||'';}
+function renderListPanel(){
+  var all=V.concat(userVenues);
+  var items=all.filter(function(v){return isVis(v)&&!v._ghost;});
+  items.sort(function(a,b){return(a.n||'').localeCompare(b.n||'');});
+  document.getElementById('listCount').textContent=items.length+' venue'+(items.length!==1?'s':'');
+  document.getElementById('listContent').innerHTML=items.map(function(v){
+    var sl=slabel(v);
+    var sCls='lv-s-'+(v.s||'active');
+    var cCls='lv-c-'+(v.c||'');
+    return '<div class="lv-item" data-id="'+esc(v.id)+'">'+
+      '<div class="lv-top">'+
+      '<div class="lv-dot '+cCls+'"></div>'+
+      '<div class="lv-info">'+
+      '<div class="lv-name">'+esc(v.n)+'</div>'+
+      '<div class="lv-meta">'+
+      (sl?'<span class="lv-status '+sCls+'">'+esc(sl)+'</span>':'')+'</div>'+
+      '</div></div></div>';
+  }).join('');
+}
 var userDotMarker=null,userPulseMarker=null,gpsWatchId=null,gpsTracking=false;
 var ZOOM_THRESHOLD=15;
 var MN=1890,MX=2026;
@@ -282,7 +329,21 @@ function init(){
   });
   document.addEventListener('click',function(){catDd.classList.remove('open');});
   document.getElementById('statusSelect').addEventListener('change',function(){aS=this.value;updateVis();});
-  document.getElementById('addBtn').onclick=function(){toggleAdd()};
+  document.getElementById('addBtn').onclick=function(){toggleAdd();};
+  document.getElementById('listToggle').onclick=function(){
+    listOpen=!listOpen;
+    this.classList.toggle('active',listOpen);
+    document.getElementById('listPanel').classList.toggle('show',listOpen);
+    if(listOpen)renderListPanel();
+  };
+  document.getElementById('listContent').addEventListener('click',function(e){
+    var item=e.target.closest('.lv-item');if(!item)return;
+    var id=item.dataset.id;if(!id)return;
+    var all=V.concat(userVenues);var v=all.find(function(x){return x.id===id;});
+    if(!v)return;
+    if(allView){suppressZoomCheck=true;allView=false;sw(v.h);setTimeout(function(){openSP(v.id);highlightMarker(v.id);},1200);setTimeout(function(){suppressZoomCheck=false;},1500);}
+    else{openSP(v.id);highlightMarker(v.id);}
+  });
   document.getElementById('gpsBtn').onclick=function(){
     if(!navigator.geolocation)return;
     var btn=this;
@@ -553,6 +614,7 @@ function updateVis(){
     else if(!shouldShow&&onMap){map.removeLayer(m);}
   });
   document.getElementById('vC').textContent=vis+'/'+hc+' visible';
+  if(listOpen)renderListPanel();
 }
 
 function openSP(id){
