@@ -242,7 +242,7 @@ function loadWikiGallery(slug,cb){
 }
 var cY=1985,cH='sunset',map,allMkrs={},drag=false,aF='all',aS='all',addMode=false,userVenues=[],userPhotos={},panelSession=0;
 var allView=false,suppressZoomCheck=false;
-var ZOOM_THRESHOLD=11;
+var ZOOM_THRESHOLD=13;
 var MN=1890,MX=2026;
 
 function waitForLeaflet(cb){if(typeof L!=='undefined')cb();else setTimeout(function(){waitForLeaflet(cb)},50);}
@@ -280,8 +280,9 @@ function init(){
     if(addMode){document.getElementById('ap-coords').value=e.latlng.lat.toFixed(5)+', '+e.latlng.lng.toFixed(5);}
   });
   map.on('zoomend',function(){
-    if(suppressZoomCheck)return;
     var z=map.getZoom();
+    console.log('[ERA] zoomend z='+z+' allView='+allView+' suppress='+suppressZoomCheck);
+    if(suppressZoomCheck)return;
     if(z<ZOOM_THRESHOLD&&!allView){allView=true;updateVis();}
     else if(z>=ZOOM_THRESHOLD&&allView){allView=false;updateVis();}
   });
