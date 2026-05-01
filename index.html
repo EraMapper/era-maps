@@ -242,7 +242,7 @@ function loadWikiGallery(slug,cb){
 }
 var cY=1985,cH='sunset',map,allMkrs={},drag=false,aF='all',aS='all',addMode=false,userVenues=[],userPhotos={},panelSession=0;
 var allView=false,suppressZoomCheck=false;
-var ZOOM_THRESHOLD=13;
+var ZOOM_THRESHOLD=15;
 var MN=1890,MX=2026;
 
 function waitForLeaflet(cb){if(typeof L!=='undefined')cb();else setTimeout(function(){waitForLeaflet(cb)},50);}
