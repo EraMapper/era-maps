@@ -91,6 +91,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .hero-img.loaded+.hero-icon{opacity:0!important;transition:opacity .3s}
 .hero-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(transparent 30%,var(--sf));z-index:1}
 .hero-fade{position:absolute;bottom:0;left:0;right:0;height:30px;background:linear-gradient(transparent,var(--cd))}
+.user-dot{width:14px;height:14px;background:#fff;border:3px solid var(--np);border-radius:50%;box-shadow:0 0 8px rgba(255,45,123,.7)}
+.user-pulse{width:40px;height:40px;border-radius:50%;background:rgba(255,45,123,.15);border:1px solid rgba(255,45,123,.25);animation:userPulse 2s ease-out infinite}
+@keyframes userPulse{0%{transform:scale(1);opacity:1}100%{transform:scale(2.5);opacity:0}}
 @keyframes markerPulse{0%{r:7;stroke-opacity:.9}50%{r:14;stroke-opacity:.3}100%{r:7;stroke-opacity:.9}}
 .marker-active{animation:markerPulse 1.5s ease-in-out infinite}
 @keyframes markerPop{0%{r:0;fill-opacity:0}60%{r:9;fill-opacity:1}100%{r:7;fill-opacity:.85}}
@@ -242,6 +245,7 @@ function loadWikiGallery(slug,cb){
 }
 var cY=1985,cH='sunset',map,allMkrs={},drag=false,aF='all',aS='all',addMode=false,userVenues=[],userPhotos={},panelSession=0;
 var allView=false,suppressZoomCheck=false;
+var userDotMarker=null,userPulseMarker=null;
 var ZOOM_THRESHOLD=15;
 var MN=1890,MX=2026;
 
@@ -287,6 +291,21 @@ function init(){
     else if(z>=ZOOM_THRESHOLD&&allView){allView=false;updateVis();}
   });
   loadUserData();
+  try{
+    if(navigator.geolocation&&navigator.permissions){
+      navigator.permissions.query({name:'geolocation'}).then(function(result){
+        if(result.state==='granted'){
+          navigator.geolocation.getCurrentPosition(function(p){
+            placeUserDot(p.coords.latitude,p.coords.longitude);
+          },function(){},{enableHighAccuracy:true,timeout:6000});
+        }
+      }).catch(function(){});
+    }else if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(function(p){
+        placeUserDot(p.coords.latitude,p.coords.longitude);
+      },function(){},{enableHighAccuracy:true,timeout:6000});
+    }
+  }catch(e){}
 }
 
 function preloadWikiImages(){
@@ -447,6 +466,15 @@ function clearPulse(){
   activeMarkerId=null;
 }
 
+function placeUserDot(lat,lng){
+  if(userDotMarker){
+    userDotMarker.setLatLng([lat,lng]);
+    userPulseMarker.setLatLng([lat,lng]);
+  }else{
+    userPulseMarker=L.marker([lat,lng],{icon:L.divIcon({className:'user-pulse',iconSize:[40,40],iconAnchor:[20,20]}),zIndexOffset:9999}).addTo(map);
+    userDotMarker=L.marker([lat,lng],{icon:L.divIcon({className:'user-dot',iconSize:[14,14],iconAnchor:[7,7]}),zIndexOffset:10000}).addTo(map);
+  }
+}
 
 function navToVenue(id){
   var allV=V.concat(userVenues);
