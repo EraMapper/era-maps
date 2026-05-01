@@ -25,11 +25,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .ln-logo{font-size:26px;font-weight:900;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--np),var(--na));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:18px}
 #citySelect{background:rgba(26,26,36,.85);backdrop-filter:blur(12px);border:1px solid var(--bd);border-radius:20px;color:var(--ts);font-size:11px;letter-spacing:1px;cursor:pointer;padding:7px 14px;-webkit-appearance:none;appearance:none;outline:none}
 #citySelect option{background:var(--cd);color:var(--tx)}
-#navTabs{display:flex;gap:4px;margin-bottom:10px}
-.nav-tab{flex:1;padding:4px 6px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:none;border:1px solid var(--bd);border-radius:6px;color:var(--tm);cursor:pointer;transition:.15s;text-align:center}
-.nav-tab.active{background:linear-gradient(135deg,var(--np),var(--na));color:var(--bg);border-color:transparent}
-#hoodSelect{width:100%;background:rgba(26,26,36,.85);backdrop-filter:blur(12px);border:1px solid var(--bd);border-radius:8px;color:var(--ts);font-size:11px;cursor:pointer;padding:6px 8px;-webkit-appearance:none;appearance:none;outline:none;margin-top:4px;flex-shrink:0}
-#hoodSelect option,#hoodSelect optgroup{background:var(--cd);color:var(--tx)}
 .ln-label{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--tm);margin-bottom:6px;font-weight:600}
 #hoodBar{display:flex;flex-direction:column;gap:3px;flex:1 1 auto;overflow-y:auto;min-height:0;padding-bottom:32px;mask-image:linear-gradient(to bottom,black 92%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,black 92%,transparent 100%);scrollbar-width:none}
 #hoodBar::-webkit-scrollbar{display:none}
@@ -174,16 +169,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="intro"><div class="it">ERA MAPS</div><div class="is">Los Angeles Through Time</div><div id="introC" style="color:var(--ts);font-size:13px;margin-bottom:20px"></div><button class="ib" id="enterBtn">EXPLORE</button></div>
 <div id="leftNav">
   <div class="ln-logo">ERA MAPS</div>
-  <div id="navTabs">
-    <button id="hoodTab" class="nav-tab active">Neighborhoods</button>
-    <button id="listToggle" class="nav-tab">☰ List</button>
-  </div>
-  <select id="hoodSelect"></select>
   <div id="hoodBar" style="display:none"></div>
 </div>
-<div id="listPanel"><div id="listCount"></div><div id="listContent"></div></div>
+<div id="listPanel" class="show"><div id="listCount"></div><div id="listContent"></div></div>
 <div id="searchWrap"><input type="text" id="searchBox" placeholder="Search places..."><button id="searchBtn">🔍</button></div>
-<div id="controlsWrap"><select id="citySelect"><option value="la" selected>🌴 Los Angeles</option><option value="ny" disabled>🗽 New York — coming soon</option><option value="lon" disabled>🇬🇧 London — coming soon</option><option value="tok" disabled>⛩️ Tokyo — coming soon</option></select><div class="cat-dd" id="catDd"><div class="cat-dd-btn" id="catDdBtn" tabindex="0"><span class="cd-label">All types</span></div><div class="cat-dd-list" id="catDdList"><div class="cat-dd-item selected" data-val="all">All types</div><div class="cat-dd-item" data-val="food"><span class="cd-dot" style="background:#5c7cfa"></span>Food</div><div class="cat-dd-item" data-val="music"><span class="cd-dot" style="background:#ff2d7b"></span>Music</div><div class="cat-dd-item" data-val="nightlife"><span class="cd-dot" style="background:#7c4dff"></span>Nightlife</div><div class="cat-dd-item" data-val="culture"><span class="cd-dot" style="background:#42a5f5"></span>Culture</div><div class="cat-dd-item" data-val="shop"><span class="cd-dot" style="background:#26c6da"></span>Shops</div><div class="cat-dd-item" data-val="hotel"><span class="cd-dot" style="background:#ffb347"></span>Hotels</div><div class="cat-dd-item" data-val="community"><span class="cd-dot" style="background:#66bb6a"></span>Community</div></div></div><select class="fsel" id="statusSelect"><option value="all">All status</option><option value="active">🌈 Still here</option><option value="closed">🩶 Gone</option><option value="demolished">🟤 Demolished</option><option value="transformed">🔄 Transformed</option></select><button id="addBtn" title="Add a location">+</button></div>
+<div id="controlsWrap"><select id="citySelect"><option value="la" selected>🌴 Los Angeles</option><option value="ny" disabled>🗽 New York — coming soon</option><option value="lon" disabled>🇬🇧 London — coming soon</option><option value="tok" disabled>⛩️ Tokyo — coming soon</option></select><div class="cat-dd" id="catDd"><div class="cat-dd-btn" id="catDdBtn" tabindex="0"><span class="cd-label">All types</span></div><div class="cat-dd-list" id="catDdList"><div class="cat-dd-item selected" data-val="all">All types</div><div class="cat-dd-item" data-val="food"><span class="cd-dot" style="background:#5c7cfa"></span>Food</div><div class="cat-dd-item" data-val="music"><span class="cd-dot" style="background:#ff2d7b"></span>Music</div><div class="cat-dd-item" data-val="nightlife"><span class="cd-dot" style="background:#7c4dff"></span>Nightlife</div><div class="cat-dd-item" data-val="culture"><span class="cd-dot" style="background:#42a5f5"></span>Culture</div><div class="cat-dd-item" data-val="shop"><span class="cd-dot" style="background:#26c6da"></span>Shops</div><div class="cat-dd-item" data-val="hotel"><span class="cd-dot" style="background:#ffb347"></span>Hotels</div><div class="cat-dd-item" data-val="community"><span class="cd-dot" style="background:#66bb6a"></span>Community</div></div></div><select class="fsel" id="statusSelect"><option value="all">All status</option><option value="active">🌈 Still here</option><option value="closed">🩶 Gone</option><option value="demolished">🟤 Demolished</option><option value="transformed">🔄 Transformed</option></select><select id="hoodSelect" class="fsel"></select><button id="addBtn" title="Add a location">+</button></div>
 <div id="searchResults"></div>
 <div id="timeline"><div class="tc"><div class="tyd"><div class="ty" id="yD">1985</div><div class="tel" id="eL"></div><div class="vc" id="vC"></div></div><div class="sc"><div class="st" id="sT"><div class="sf" id="sF"></div><div class="sth" id="sTh"></div></div><div class="stk" id="sTk"></div></div></div></div>
 <div class="sp" id="sP"><div class="sph" id="spH"></div><div class="spb"><div class="spt" id="spT"></div><div class="spn" id="spN"></div><div class="spa" id="spA"></div><div id="spCW"></div><div id="spGallery"></div><div class="sst">About</div><div class="spd" id="spD"></div><div class="sst">Timeline</div><div class="stl" id="spTL"></div><div class="sst">Tags</div><div class="stg" id="spTG"></div><div id="spRelWrap" style="display:none"><div class="sst">Related</div><div class="stg" id="spRel"></div></div><div id="spWikiLink"></div><div id="spPhotoAdd"></div><div class="spn2">📸 Photos via Wikipedia • Drag or paste to contribute</div></div></div>
@@ -279,7 +269,7 @@ function loadWikiGallery(slug,cb){
   document.head.appendChild(s);setTimeout(function(){try{s.remove()}catch(e){}},11000);
 }
 var cY=1985,cH='sunset',map,allMkrs={},drag=false,aF='all',aS='all',addMode=false,userVenues=[],userPhotos={},panelSession=0;
-var allView=false,suppressZoomCheck=false,listOpen=false;
+var allView=true,suppressZoomCheck=false,listOpen=true;
 function esc(s){return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):''}
 var STATUS_LABELS={active:'Still here',closed:'Gone',demolished:'Demolished',transformed:'Transformed'};
 function slabel(v){return STATUS_LABELS[v.s]||v.s||'';}
@@ -312,7 +302,7 @@ function init(){
   document.getElementById('enterBtn').onclick=function(){document.getElementById('intro').classList.add('hidden')};
   var all=V.concat(userVenues);
   document.getElementById('introC').textContent=all.length+' locations \u2022 28 neighborhoods \u2022 1870\u2013Present';
-  map=L.map('map',{center:H.sunset.center,zoom:15,zoomControl:false,attributionControl:false});
+  map=L.map('map',{center:[34.052,-118.243],zoom:11,zoomControl:false,attributionControl:false});
   L.control.zoom({position:'bottomright'}).addTo(map);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd'}).addTo(map);
   initEraTint();
@@ -336,27 +326,19 @@ function init(){
   document.addEventListener('click',function(){catDd.classList.remove('open');});
   document.getElementById('statusSelect').addEventListener('change',function(){aS=this.value;updateVis();});
   var hs=document.getElementById('hoodSelect');
+  var allOpt=document.createElement('option');allOpt.value='';allOpt.textContent='All Neighborhoods';hs.appendChild(allOpt);
   REGIONS.forEach(function(reg){
     var og=document.createElement('optgroup');og.label=reg.label;
     reg.hoods.forEach(function(k){if(!H[k])return;var o=document.createElement('option');o.value=k;o.textContent=H[k].name;og.appendChild(o);});
     hs.appendChild(og);
   });
-  hs.value=cH;
-  hs.addEventListener('change',function(){sw(this.value);});
+  hs.value='';
+  hs.addEventListener('change',function(){
+    if(!this.value){allView=true;map.flyTo([34.052,-118.243],11,{duration:1});updateVis();}
+    else{allView=false;sw(this.value);}
+  });
+  renderListPanel();
   document.getElementById('addBtn').onclick=function(){toggleAdd();};
-  document.getElementById('hoodTab').onclick=function(){
-    listOpen=false;
-    document.getElementById('listPanel').classList.remove('show');
-    document.getElementById('hoodTab').classList.add('active');
-    document.getElementById('listToggle').classList.remove('active');
-  };
-  document.getElementById('listToggle').onclick=function(){
-    listOpen=!listOpen;
-    document.getElementById('listPanel').classList.toggle('show',listOpen);
-    document.getElementById('listToggle').classList.toggle('active',listOpen);
-    document.getElementById('hoodTab').classList.toggle('active',!listOpen);
-    if(listOpen)renderListPanel();
-  };
   document.getElementById('listContent').addEventListener('click',function(e){
     var item=e.target.closest('.lv-item');if(!item)return;
     var id=item.dataset.id;if(!id)return;
@@ -451,7 +433,7 @@ var collapsedRegions={};
 
 function buildHB(){
   var b=document.getElementById('hoodBar');b.innerHTML='';var all=V.concat(userVenues);
-  var hs=document.getElementById('hoodSelect');if(hs)hs.value=cH;
+  var hs=document.getElementById('hoodSelect');if(hs)hs.value=allView?'':cH;
   REGIONS.forEach(function(reg){
     var rh=document.createElement('div');rh.className='rg-hdr';
     var collapsed=!!collapsedRegions[reg.label];
