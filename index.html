@@ -272,7 +272,7 @@ function loadWikiGallery(slug,cb){
   document.head.appendChild(s);setTimeout(function(){try{s.remove()}catch(e){}},11000);
 }
 var cY=1985,cH='sunset',map,allMkrs={},drag=false,aF='all',aS='all',addMode=false,userVenues=[],userPhotos={},panelSession=0;
-var allView=true,suppressZoomCheck=false,listOpen=true;
+var allView=true,suppressZoomCheck=false,listOpen=true,programmaticMove=false;
 function esc(s){return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):''}
 var STATUS_LABELS={active:'Still here',closed:'Gone',demolished:'Demolished',transformed:'Transformed'};
 function slabel(v){return STATUS_LABELS[v.s]||v.s||'';}
@@ -337,7 +337,7 @@ function init(){
   });
   hs.value='';
   hs.addEventListener('change',function(){
-    if(!this.value){allView=true;map.flyTo([34.052,-118.243],11,{duration:1});updateVis();}
+    if(!this.value){allView=true;programmaticMove=true;map.flyTo([34.052,-118.243],11,{duration:1});updateVis();}
     else{allView=false;sw(this.value);}
   });
   renderListPanel();
@@ -386,14 +386,13 @@ function init(){
     if(addMode){document.getElementById('ap-coords').value=e.latlng.lat.toFixed(5)+', '+e.latlng.lng.toFixed(5);}
   });
   map.on('zoomend',function(){
-    var z=map.getZoom();
-    console.log('[ERA] zoomend z='+z+' allView='+allView+' suppress='+suppressZoomCheck);
-    if(suppressZoomCheck)return;
-    var hs=document.getElementById('hoodSelect');
-    if(hs&&hs.value==='')return;
-    if(z<ZOOM_THRESHOLD&&!allView){allView=true;updateVis();}
-    else if(z>=ZOOM_THRESHOLD&&allView){allView=false;updateVis();}
+    if(suppressZoomCheck||programmaticMove||allView)return;
+    allView=true;updateVis();
   });
+  map.on('dragstart',function(){
+    if(!allView){allView=true;updateVis();}
+  });
+  map.on('moveend',function(){programmaticMove=false;});
   loadUserData();
   try{
     if(navigator.geolocation&&navigator.permissions){
@@ -467,7 +466,7 @@ function buildHB(){
 }
 
 function sw(hood){
-  cH=hood;closeSP();map.flyTo(H[hood].center,H[hood].zoom,{duration:1});
+  cH=hood;closeSP();programmaticMove=true;map.flyTo(H[hood].center,H[hood].zoom,{duration:1});
   buildHB();updateTk();setY(cY);updateSV();updateVis();
 }
 
