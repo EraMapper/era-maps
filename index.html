@@ -241,6 +241,8 @@ function loadWikiGallery(slug,cb){
   document.head.appendChild(s);setTimeout(function(){try{s.remove()}catch(e){}},11000);
 }
 var cY=1985,cH='sunset',map,allMkrs={},drag=false,aF='all',aS='all',addMode=false,userVenues=[],userPhotos={},panelSession=0;
+var allView=false,suppressZoomCheck=false;
+var ZOOM_THRESHOLD=11;
 var MN=1890,MX=2026;
 
 function waitForLeaflet(cb){if(typeof L!=='undefined')cb();else setTimeout(function(){waitForLeaflet(cb)},50);}
@@ -276,6 +278,12 @@ function init(){
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeSP();if(addMode)toggleAdd();}});
   map.on('click',function(e){
     if(addMode){document.getElementById('ap-coords').value=e.latlng.lat.toFixed(5)+', '+e.latlng.lng.toFixed(5);}
+  });
+  map.on('zoomend',function(){
+    if(suppressZoomCheck)return;
+    var z=map.getZoom();
+    if(z<ZOOM_THRESHOLD&&!allView){allView=true;updateVis();}
+    else if(z>=ZOOM_THRESHOLD&&allView){allView=false;updateVis();}
   });
   loadUserData();
 }
@@ -344,7 +352,7 @@ function updateTk(){
   document.querySelectorAll('.stk span').forEach(function(s){s.onclick=function(){setY(+s.dataset.y);updateSV();updateVis();}});
 }
 
-function isVis(v){if(v.h!==cH)return false;if(cY<v.ys)return false;if(aF!=='all'&&v.c!==aF)return false;if(aS!=='all'&&v.s!==aS)return false;return true;}
+function isVis(v){if(!allView&&v.h!==cH)return false;if(cY<v.ys)return false;if(aF!=='all'&&v.c!==aF)return false;if(aS!=='all'&&v.s!==aS)return false;return true;}
 
 function createAllMarkers(){
   var all=V.concat(userVenues);
@@ -353,7 +361,18 @@ function createAllMarkers(){
     if(allMkrs[v.id])return;
     var m=L.circleMarker([v.lat,v.lng],{radius:7,fillColor:dotColors[v.c]||'#888',fillOpacity:0.85,color:'#fff',weight:2,opacity:0.9});
     // Click → side panel directly
-    m.on('click',function(){map.closePopup();openSP(v.id);highlightMarker(v.id);});
+    m.on('click',function(){
+      map.closePopup();
+      if(allView){
+        suppressZoomCheck=true;
+        allView=false;
+        sw(v.h);
+        setTimeout(function(){openSP(v.id);highlightMarker(v.id);},1200);
+        setTimeout(function(){suppressZoomCheck=false;},1500);
+      }else{
+        openSP(v.id);highlightMarker(v.id);
+      }
+    });
     // Hover popup card
     var cl=v.ye?'<br><span style="color:var(--red);font-size:10px">Closed '+v.ye+'</span>':'';
     var ub=v.user?'<span class="user-badge">community</span>':'';
@@ -456,7 +475,7 @@ function highlightMarker(id){
 }
 
 function updateVis(){
-  var all=V.concat(userVenues);var vis=0,hc=all.filter(function(v){return v.h===cH}).length;
+  var all=V.concat(userVenues);var vis=0,hc=allView?all.length:all.filter(function(v){return v.h===cH}).length;
   all.forEach(function(v){
     if(!v||!v.id)return;
     v._ghost=!!(v.ye&&v.ye<cY);
