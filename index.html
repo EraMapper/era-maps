@@ -143,8 +143,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 #gpsBtn{position:fixed;bottom:25px;right:110px;z-index:101;width:40px;height:40px;border-radius:8px;background:rgba(26,26,36,.85);backdrop-filter:blur(12px);border:1px solid var(--bd);color:var(--ts);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.4)}
 #gpsBtn:hover{background:rgba(40,40,55,.95);color:var(--np)}
 #gpsBtn.tracking{border-color:var(--np);color:var(--np)}
-#listToggle{padding:3px 8px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:none;border:1px solid var(--bd);border-radius:6px;color:var(--tm);cursor:pointer;margin-bottom:12px;align-self:flex-start;transition:.15s}
-#listToggle.active{background:linear-gradient(135deg,var(--np),var(--na));color:var(--bg);border-color:transparent}
+#navTabs{display:flex;gap:4px;margin-bottom:10px}
+.nav-tab{flex:1;padding:4px 6px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:none;border:1px solid var(--bd);border-radius:6px;color:var(--tm);cursor:pointer;transition:.15s;text-align:center}
+.nav-tab.active{background:linear-gradient(135deg,var(--np),var(--na));color:var(--bg);border-color:transparent}
 #listPanel{position:fixed;left:150px;top:0;bottom:100px;width:240px;z-index:99;background:rgba(10,10,15,.96);backdrop-filter:blur(12px);border-right:1px solid var(--bd);display:none;flex-direction:column;overflow:hidden}
 #listPanel.show{display:flex}
 #listCount{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--tm);padding:14px 12px 8px;flex-shrink:0;border-bottom:1px solid var(--bd)}
@@ -173,8 +174,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="intro"><div class="it">ERA MAPS</div><div class="is">Los Angeles Through Time</div><div id="introC" style="color:var(--ts);font-size:13px;margin-bottom:20px"></div><button class="ib" id="enterBtn">EXPLORE</button></div>
 <div id="leftNav">
   <div class="ln-logo">ERA MAPS</div>
-  <button id="listToggle">☰ List</button>
-  <div class="ln-label">Neighborhoods</div>
+  <div id="navTabs">
+    <button id="hoodTab" class="nav-tab active">Neighborhoods</button>
+    <button id="listToggle" class="nav-tab">☰ List</button>
+  </div>
   <select id="hoodSelect"></select>
   <div id="hoodBar" style="display:none"></div>
 </div>
@@ -341,10 +344,17 @@ function init(){
   hs.value=cH;
   hs.addEventListener('change',function(){sw(this.value);});
   document.getElementById('addBtn').onclick=function(){toggleAdd();};
+  document.getElementById('hoodTab').onclick=function(){
+    listOpen=false;
+    document.getElementById('listPanel').classList.remove('show');
+    document.getElementById('hoodTab').classList.add('active');
+    document.getElementById('listToggle').classList.remove('active');
+  };
   document.getElementById('listToggle').onclick=function(){
     listOpen=!listOpen;
-    this.classList.toggle('active',listOpen);
     document.getElementById('listPanel').classList.toggle('show',listOpen);
+    document.getElementById('listToggle').classList.toggle('active',listOpen);
+    document.getElementById('hoodTab').classList.toggle('active',!listOpen);
     if(listOpen)renderListPanel();
   };
   document.getElementById('listContent').addEventListener('click',function(e){
