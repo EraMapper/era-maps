@@ -389,6 +389,8 @@ function init(){
     var z=map.getZoom();
     console.log('[ERA] zoomend z='+z+' allView='+allView+' suppress='+suppressZoomCheck);
     if(suppressZoomCheck)return;
+    var hs=document.getElementById('hoodSelect');
+    if(hs&&hs.value==='')return;
     if(z<ZOOM_THRESHOLD&&!allView){allView=true;updateVis();}
     else if(z>=ZOOM_THRESHOLD&&allView){allView=false;updateVis();}
   });
