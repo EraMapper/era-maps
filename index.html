@@ -462,8 +462,8 @@ function updateVis(){
     var m=allMkrs[v.id];if(!m)return;
     var shouldShow=isVis(v);
     var onMap=map.hasLayer(m);
-    var fc=v._ghost?'#8b7355':(v.s==='closed'?'#8b7355':dotColors[v.c]||'#888');
-    var fo=v._ghost?0.70:(v.s==='closed'?0.85:0.85);
+    var fc=v._ghost?'#8b7355':dotColors[v.c]||'#888';
+    var fo=v._ghost?0.70:0.85;
     if(shouldShow&&!onMap){
       vis++;m.addTo(map);
       m.setStyle({fillColor:fc,fillOpacity:fo});
