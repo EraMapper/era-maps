@@ -138,6 +138,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .pu-drop:hover{border-color:var(--np);color:var(--np)}
 .pu-status{font-size:10px;margin-top:4px;min-height:14px}
 .pu-ok{color:#4caf50}.pu-err{color:var(--red)}
+#gpsBtn{position:fixed;bottom:56px;right:14px;z-index:101;width:30px;height:30px;border-radius:8px;background:rgba(26,26,36,.85);backdrop-filter:blur(12px);border:1px solid var(--bd);color:var(--ts);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+#gpsBtn:hover{background:rgba(40,40,55,.95);color:var(--np)}
+#gpsBtn.tracking{border-color:var(--np);color:var(--np)}
 </style>
 </head>
 <body>
@@ -154,6 +157,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="timeline"><div class="tc"><div class="tyd"><div class="ty" id="yD">1985</div><div class="tel" id="eL"></div><div class="vc" id="vC"></div></div><div class="sc"><div class="st" id="sT"><div class="sf" id="sF"></div><div class="sth" id="sTh"></div></div><div class="stk" id="sTk"></div></div></div></div>
 <div class="sp" id="sP"><div class="sph" id="spH"></div><div class="spb"><div class="spt" id="spT"></div><div class="spn" id="spN"></div><div class="spa" id="spA"></div><div id="spCW"></div><div id="spGallery"></div><div class="sst">About</div><div class="spd" id="spD"></div><div class="sst">Timeline</div><div class="stl" id="spTL"></div><div class="sst">Tags</div><div class="stg" id="spTG"></div><div id="spRelWrap" style="display:none"><div class="sst">Related</div><div class="stg" id="spRel"></div></div><div id="spWikiLink"></div><div id="spPhotoAdd"></div><div class="spn2">📸 Photos via Wikipedia • Drag or paste to contribute</div></div></div>
 <div id="addPanel"><h3>📍 Add a Location</h3><div class="ab-help">Click map to set coords. Your addition is shared with all users.</div><input id="ap-name" placeholder="Name"><input id="ap-addr" placeholder="Address"><select id="ap-hood"></select><select id="ap-cat"><option value="music">🎵 Music</option><option value="food">🍸 Bar/Restaurant</option><option value="hotel">🏨 Hotel</option><option value="culture">🎭 Culture</option><option value="shop">🛍️ Shop</option></select><input id="ap-year" placeholder="Year founded" type="number"><input id="ap-endyr" placeholder="Year closed (blank if open)"><textarea id="ap-desc" placeholder="Description..."></textarea><input id="ap-wiki" placeholder="Wikipedia article (optional)"><input id="ap-coords" placeholder="Lat, Lng (click map)" readonly><div class="abr"><button class="ab-cancel" onclick="toggleAdd()">Cancel</button><button class="ab-save" onclick="saveUserVenue()">Save</button></div></div>
+<button id="gpsBtn" title="Show my location">◎</button>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="venues.js"></script>
 <script src="shared.js"></script>
@@ -279,6 +283,16 @@ function init(){
   document.addEventListener('click',function(){catDd.classList.remove('open');});
   document.getElementById('statusSelect').addEventListener('change',function(){aS=this.value;updateVis();});
   document.getElementById('addBtn').onclick=function(){toggleAdd()};
+  document.getElementById('gpsBtn').onclick=function(){
+    if(!navigator.geolocation)return;
+    var btn=this;
+    btn.classList.add('tracking');
+    navigator.geolocation.getCurrentPosition(function(p){
+      placeUserDot(p.coords.latitude,p.coords.longitude);
+    },function(){
+      btn.classList.remove('tracking');
+    },{enableHighAccuracy:true,timeout:8000});
+  };
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeSP();if(addMode)toggleAdd();}});
   map.on('click',function(e){
     if(addMode){document.getElementById('ap-coords').value=e.latlng.lat.toFixed(5)+', '+e.latlng.lng.toFixed(5);}
