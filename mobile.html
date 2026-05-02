@@ -29,9 +29,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 #searchInput:focus{border-color:var(--np)}
 
 /* FILTER ROW */
-#filterRow{display:flex;gap:6px;margin-top:8px;align-items:center}
-.fsel{flex:1;min-width:0}
-.cat-dd{flex:1;min-width:0}
+#filterRow{display:flex;gap:6px;margin-top:8px;align-items:center;flex-wrap:wrap}
+.fsel{flex:1 1 calc(50% - 3px);min-width:0}
 /* TIMELINE SLIDER */
 #decadeRow{margin-top:8px;padding:10px 0 14px}
 #yearLabel{text-align:center;font-size:14px;font-weight:800;letter-spacing:1px;color:var(--np);margin-bottom:7px;font-variant-numeric:tabular-nums;line-height:1}
@@ -204,19 +203,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
    <option value="5">5 miles</option>
    <option value="10">10 miles</option>
   </select>
-  <div class="cat-dd" id="catDd">
-   <div class="cat-dd-btn" id="catDdBtn" tabindex="0"><span class="cd-label">All types</span></div>
-   <div class="cat-dd-list" id="catDdList">
-    <div class="cat-dd-item selected" data-val="all">All types</div>
-    <div class="cat-dd-item" data-val="food"><span class="cd-dot" style="background:#5c7cfa"></span>Food</div>
-    <div class="cat-dd-item" data-val="music"><span class="cd-dot" style="background:#ff2d7b"></span>Music</div>
-    <div class="cat-dd-item" data-val="nightlife"><span class="cd-dot" style="background:#7c4dff"></span>Nightlife</div>
-    <div class="cat-dd-item" data-val="culture"><span class="cd-dot" style="background:#42a5f5"></span>Culture</div>
-    <div class="cat-dd-item" data-val="shop"><span class="cd-dot" style="background:#26c6da"></span>Shops</div>
-    <div class="cat-dd-item" data-val="hotel"><span class="cd-dot" style="background:#ffb347"></span>Hotels</div>
-    <div class="cat-dd-item" data-val="community"><span class="cd-dot" style="background:#66bb6a"></span>Community</div>
-   </div>
-  </div>
+  <select class="fsel" id="catSelect">
+   <option value="all">All types</option>
+   <option value="food">Food</option>
+   <option value="music">Music</option>
+   <option value="nightlife">Nightlife</option>
+   <option value="culture">Culture</option>
+   <option value="shop">Shops</option>
+   <option value="hotel">Hotels</option>
+   <option value="community">Community</option>
+  </select>
   <select class="fsel" id="statusSelect">
    <option value="all">All status</option>
    <option value="active">🌈 Still here</option>
@@ -1052,30 +1048,7 @@ document.getElementById('hoodSelect').addEventListener('change',function(){
 });
 
 // Category select
-// Category dropdown (custom)
-(function(){
-  var dd=document.getElementById('catDd'),btn=document.getElementById('catDdBtn'),list=document.getElementById('catDdList');
-  btn.addEventListener('click',function(e){e.stopPropagation();dd.classList.toggle('open')});
-  list.addEventListener('click',function(e){
-    var item=e.target.closest('.cat-dd-item');if(!item)return;
-    var val=item.getAttribute('data-val');
-    activeCat=val;
-    var items=list.querySelectorAll('.cat-dd-item');for(var i=0;i<items.length;i++)items[i].classList.remove('selected');
-    item.classList.add('selected');
-    var label=btn.querySelector('.cd-label');
-    var oldDot=btn.querySelector('.cd-dot');if(oldDot)oldDot.remove();
-    if(val==='all'){label.textContent='All types'}
-    else{
-      var dot=document.createElement('span');dot.className='cd-dot';dot.style.background=dotColors[val]||'#888';
-      btn.insertBefore(dot,label);
-      label.textContent=item.textContent.trim();
-    }
-    dd.classList.remove('open');
-    update();
-  });
-  document.addEventListener('click',function(){dd.classList.remove('open')});
-  dd.addEventListener('click',function(e){e.stopPropagation()});
-})();
+document.getElementById('catSelect').addEventListener('change',function(){activeCat=this.value;update();});
 
 // Search
 var st;
