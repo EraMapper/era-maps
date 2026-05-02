@@ -141,7 +141,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 #radiusSelect:disabled{opacity:0.35;cursor:not-allowed}
 #gpsBtn{position:fixed;bottom:25px;right:110px;z-index:101;width:40px;height:40px;border-radius:8px;background:rgba(26,26,36,.85);backdrop-filter:blur(12px);border:1px solid var(--bd);color:var(--ts);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.4)}
 #gpsBtn:hover{background:rgba(40,40,55,.95);color:var(--np)}
+#gpsBtn.loading{border-color:var(--ts);color:var(--ts);animation:gpsPulse 1s ease-in-out infinite}
 #gpsBtn.tracking{border-color:var(--np);color:var(--np)}
+@keyframes gpsPulse{0%,100%{opacity:1}50%{opacity:0.35}}
 #listToggle{padding:3px 8px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:none;border:1px solid var(--bd);border-radius:6px;color:var(--tm);cursor:pointer;margin-bottom:8px;align-self:flex-start;transition:.15s}
 #listToggle.active{background:linear-gradient(135deg,var(--np),var(--na));color:var(--bg);border-color:transparent}
 #listPanel{display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden}
@@ -343,6 +345,7 @@ function init(){
   document.getElementById('radiusSelect').addEventListener('change',function(){
     radius=parseFloat(this.value);
     allView=true;
+    var hs=document.getElementById('hoodSelect');hs.value='';
     updateVis();
     if(radius<900){
       var lls=[];
@@ -364,7 +367,11 @@ function init(){
   hs.value='';
   hs.addEventListener('change',function(){
     if(!this.value){allView=true;map.flyTo([34.052,-118.243],11,{duration:1});updateVis();}
-    else{allView=false;sw(this.value);}
+    else{
+      radius=999;
+      var rs=document.getElementById('radiusSelect');rs.value='999';rs.disabled=true;
+      allView=false;sw(this.value);
+    }
   });
   renderListPanel();
   document.getElementById('listToggle').onclick=function(){
@@ -389,24 +396,24 @@ function init(){
       gpsTracking=false;hasGPS=false;radius=999;
       try{navigator.geolocation.clearWatch(gpsWatchId);}catch(e){}
       gpsWatchId=null;
-      btn.classList.remove('tracking');
+      btn.classList.remove('tracking','loading');
       var rs=document.getElementById('radiusSelect');rs.value='999';rs.disabled=true;
       updateVis();
       return;
     }
     gpsTracking=true;
-    btn.classList.add('tracking');
+    btn.classList.add('loading');
     try{
       gpsWatchId=navigator.geolocation.watchPosition(function(p){
         placeUserDot(p.coords.latitude,p.coords.longitude);
       },function(){
         gpsTracking=false;gpsWatchId=null;hasGPS=false;radius=999;
-        btn.classList.remove('tracking');
+        btn.classList.remove('tracking','loading');
         var rs=document.getElementById('radiusSelect');rs.value='999';rs.disabled=true;
         updateVis();
-      },{enableHighAccuracy:true,timeout:10000,maximumAge:30000});
+      },{enableHighAccuracy:true,timeout:10000,maximumAge:60000});
     }catch(e){
-      gpsTracking=false;gpsWatchId=null;btn.classList.remove('tracking');
+      gpsTracking=false;gpsWatchId=null;btn.classList.remove('tracking','loading');
     }
   };
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeSP();if(addMode)toggleAdd();}});
@@ -601,6 +608,9 @@ function placeUserDot(lat,lng){
   userLat=lat;userLng=lng;
   if(!hasGPS&&gpsTracking){
     hasGPS=true;
+    var btn=document.getElementById('gpsBtn');
+    btn.classList.remove('loading');
+    btn.classList.add('tracking');
     map.flyTo([lat,lng],15,{duration:1.5});
     document.getElementById('radiusSelect').disabled=false;
   }else if(!hasGPS){
