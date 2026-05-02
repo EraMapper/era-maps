@@ -193,6 +193,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="venues.js"></script>
 <script src="shared.js"></script>
+<script src="wiki-images.js"></script>
 <script>
 var H={sunset:{name:'Sunset Strip',center:[34.094,-118.376],zoom:15,ticks:[1925,1940,1955,1965,1975,1985,1995,2005,2025]},hollywood:{name:'Hollywood',center:[34.1017,-118.3387],zoom:15,ticks:[1910,1922,1935,1950,1965,1977,1990,2010,2025]},chinatown:{name:'Chinatown',center:[34.0622,-118.2398],zoom:16,ticks:[1880,1900,1938,1950,1970,1990,2005,2015,2025]},downtown:{name:'Downtown',center:[34.048,-118.252],zoom:15,ticks:[1890,1910,1926,1940,1960,1980,2000,2015,2025]},venice:{name:'Venice',center:[33.988,-118.472],zoom:15,ticks:[1905,1920,1940,1958,1970,1980,2000,2015,2025]},silverlake:{name:'Silver Lake',center:[34.084,-118.270],zoom:15,ticks:[1920,1935,1955,1966,1977,1990,2001,2015,2025]},losfeliz:{name:'Los Feliz',center:[34.106,-118.292],zoom:15,ticks:[1915,1924,1935,1950,1965,1975,1990,2010,2025]},bevhills:{name:'Beverly Hills',center:[34.073,-118.401],zoom:15,ticks:[1912,1920,1928,1940,1955,1970,1990,2010,2025]},weho:{name:'West Hollywood',center:[34.085,-118.370],zoom:15,ticks:[1920,1940,1957,1970,1979,1991,2005,2015,2025]},ktown:{name:'Koreatown / Mid-Wilshire',center:[34.062,-118.301],zoom:15,ticks:[1920,1930,1945,1960,1975,1992,2005,2015,2025]},fairfax:{name:'Fairfax / Mid-City',center:[34.075,-118.361],zoom:15,ticks:[1920,1934,1945,1960,1975,1985,2000,2015,2025]},santamonica:{name:'Santa Monica / Malibu',center:[34.015,-118.500],zoom:13,ticks:[1910,1925,1940,1955,1965,1980,2000,2015,2025]},valley:{name:'The Valley',center:[34.165,-118.370],zoom:13,ticks:[1915,1930,1945,1955,1970,1985,2000,2015,2025]},
   noho:{name:'North Hollywood',center:[34.1706,-118.3756],zoom:14,ticks:[1910,1930,1945,1960,1975,1990,2000,2015,2025]},
@@ -201,20 +202,6 @@ var EL={sunset:{1925:{l:'Roaring Twenties â€” Wild Beginnings',b:'Sunset Strip â
 var GOOGLE_API_KEY=localStorage.getItem('era_maps_gkey')||'';
 function setGoogleKey(k){GOOGLE_API_KEY=k;localStorage.setItem('era_maps_gkey',k);}
 if(!GOOGLE_API_KEY&&!localStorage.getItem('era_maps_gkey_skip')){var _k=prompt('Optional: Paste your Google API key for Street View photos.\nCancel to skip (you won\'t be asked again).');if(_k&&_k.trim()){setGoogleKey(_k.trim());}else{localStorage.setItem('era_maps_gkey_skip','1');}}
-var imgCache={};
-function loadCommonsImg(query,cb){
-  var cn='_cm'+Math.random().toString(36).substr(2,9),done=false;
-  var t=setTimeout(function(){if(done)return;done=true;cb(null);try{delete window[cn]}catch(e){}},6000);
-  window[cn]=function(d){if(done)return;done=true;clearTimeout(t);try{
-    var pages=d.query&&d.query.pages?Object.values(d.query.pages):[];
-    var found=pages.filter(function(pg){if(!pg.imageinfo||!pg.imageinfo[0])return false;var ii=pg.imageinfo[0];if(!ii.thumburl&&!ii.url)return false;var tt=pg.title||'';if(!/\.(jpg|jpeg|png)$/i.test(tt))return false;if(/Commons-logo|Icon|Symbol|Flag_of|Logo|Pictogram|Map_of|Locator|Location_map|Wikimedia|Red_pog|Ambox|Nuvola|Padlock|OOjs|Wikidata|Information_icon|Gnome|Portal-|PD-icon|Gtk-dialog|Circle-icons|Noun_Project|Fairytale|Fxemoji|Breezeicons/i.test(tt))return false;return true;});
-    if(found.length>0){var ii=found[0].imageinfo[0];cb(ii.thumburl||ii.url);}else{cb(null);}
-  }catch(e){cb(null);}try{delete window[cn]}catch(e){}};
-  var s=document.createElement('script');
-  s.src='https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch='+encodeURIComponent(query+' Los Angeles')+'&gsrnamespace=6&gsrlimit=4&prop=imageinfo&iiprop=url&iiurlwidth=500&format=json&callback='+cn;
-  s.onerror=function(){if(done)return;done=true;clearTimeout(t);cb(null);try{delete window[cn]}catch(e){}};
-  document.head.appendChild(s);setTimeout(function(){try{s.remove()}catch(e){}},7000);
-}
 function loadCommonsGallery(query,cb){
   var cn='_cg'+Math.random().toString(36).substr(2,9),done=false;
   var t=setTimeout(function(){if(done)return;done=true;cb([]);try{delete window[cn]}catch(e){}},8000);
@@ -231,33 +218,6 @@ function loadCommonsGallery(query,cb){
 function streetViewUrl(lat,lng,w,h){
   if(!GOOGLE_API_KEY)return null;
   return 'https://maps.googleapis.com/maps/api/streetview?size='+(w||500)+'x'+(h||300)+'&location='+lat+','+lng+'&fov=90&pitch=5&key='+GOOGLE_API_KEY;
-}
-function isBadWikiImg(url,title,w,h){
-  if(/\.svg/i.test(url||''))return true;
-  if((w&&w<100)||(h&&h<100))return true;
-  var s=(title||url||'').toLowerCase();
-  return /logo|icon|flag|map|diagram|chart|coat.of.arms|seal|emblem|portrait|headshot/.test(s);
-}
-function loadWikiImg(slug,cb){
-  if(!slug){cb(null);return;}if(imgCache[slug]!==undefined){cb(imgCache[slug]);return;}
-  var cn='_w'+Math.random().toString(36).substr(2,9),done=false;
-  var t=setTimeout(function(){if(done)return;done=true;imgCache[slug]=null;cb(null);try{delete window[cn]}catch(e){}},6000);
-  function fallbackGallery(){
-    var cn2='_wf'+Math.random().toString(36).substr(2,9),done2=false;
-    var t2=setTimeout(function(){if(done2)return;done2=true;imgCache[slug]=null;cb(null);try{delete window[cn2]}catch(e){}},6000);
-    window[cn2]=function(d){if(done2)return;done2=true;clearTimeout(t2);try{
-      var pages=d.query&&d.query.pages?Object.values(d.query.pages):[];
-      var found=pages.filter(function(pg){if(!pg.imageinfo||!pg.imageinfo[0])return false;var ii=pg.imageinfo[0];if(!ii.thumburl&&!ii.url)return false;var tt=pg.title||'';if(!/\.(jpg|jpeg|png)$/i.test(tt))return false;if(/Commons-logo|Icon|Symbol|Flag_of|Logo|Pictogram|Map_of|Locator|Location_map|Wikimedia|Red_pog|Ambox|Question_book|Edit-clear|Text-x|Folder_Hex|Disambig|Crystal_Clear|Nuvola|Padlock|Semi-protection|Lock-|OOjs|Increase2|Decrease2|Steady2|Star_full|Star_empty|Gold_medal|Silver_medal|Bronze_medal|Wikidata|Information_icon|Gnome|Replacement_character|Unbalanced|Search_icon|Portal-|P_vip|Emojione|Twemoji|Cscr-|PD-icon|Gtk-dialog|Circle-icons|Noun_Project|Fairytale|Silk-|Farm-Fresh|Fxemoji|Breezeicons|Splashscreen|LA_Skyline_Mountains2|LA.Skyline.Mountains/i.test(tt))return false;if(isBadWikiImg(ii.thumburl||ii.url,tt,ii.thumbwidth,ii.thumbheight))return false;return true;});
-      var u=found.length>0?(found[0].imageinfo[0].thumburl||found[0].imageinfo[0].url):null;
-      imgCache[slug]=u;cb(u);
-    }catch(e){imgCache[slug]=null;cb(null);}try{delete window[cn2]}catch(e){}};
-    var s2=document.createElement('script');s2.src='https://en.wikipedia.org/w/api.php?action=query&titles='+encodeURIComponent(decodeURIComponent(slug))+'&generator=images&gimlimit=3&prop=imageinfo&iiprop=url&iiurlwidth=500&redirects=1&format=json&callback='+cn2;
-    s2.onerror=function(){if(done2)return;done2=true;clearTimeout(t2);imgCache[slug]=null;cb(null);try{delete window[cn2]}catch(e){}};document.head.appendChild(s2);setTimeout(function(){try{s2.remove()}catch(e){}},7000);
-  }
-  window[cn]=function(d){if(done)return;done=true;clearTimeout(t);try{var p=Object.values(d.query.pages)[0
-];var u=p&&p.thumbnail?p.thumbnail.source:null;if(u&&isBadWikiImg(u,p.pageimage,p.thumbnail.width,p.thumbnail.height))u=null;if(u){imgCache[slug]=u;cb(u);}else{fallbackGallery();}}catch(e){fallbackGallery();}try{delete window[cn]}catch(e){}};
-  var s=document.createElement('script');s.src='https://en.wikipedia.org/w/api.php?action=query&titles='+encodeURIComponent(decodeURIComponent(slug))+'&prop=pageimages&pithumbsize=500&redirects=1&format=json&callback='+cn;
-  s.onerror=function(){if(done)return;done=true;clearTimeout(t);imgCache[slug]=null;cb(null);try{delete window[cn]}catch(e){}};document.head.appendChild(s);setTimeout(function(){try{s.remove()}catch(e){}},7000);
 }
 function loadWikiGallery(slug,cb){
   if(!slug){cb([]);return;}
@@ -565,44 +525,15 @@ function createAllMarkers(){
     var closeTimer=null;
     m.on('mouseover',function(){
       clearTimeout(closeTimer);
-      // Try to upgrade with image: manual img field takes priority, then Wikipedia, then Commons
-      if(v.img){
-        var imgHdr='<div class="pop-img" style="background-image:url(\''+v.img+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';
-        m.setPopupContent(imgHdr+bodyHtml);
-      } else if(v.w&&imgCache[v.w]){
-        var imgHdr='<div class="pop-img" style="background-image:url(\''+imgCache[v.w]+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';
-        m.setPopupContent(imgHdr+bodyHtml);
-      }
-      m.openPopup();
-      if(!v.img){
-        if(v.w&&!imgCache[v.w]&&imgCache[v.w]===undefined){
-          loadWikiImg(v.w,function(url){
-            if(url&&m.isPopupOpen()){
-              var imgHdr='<div class="pop-img" style="background-image:url(\''+url+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';
-              m.setPopupContent(imgHdr+bodyHtml);
-            } else if(!url&&m.isPopupOpen()){
-              loadCommonsImg(v.n+(v.h?' '+v.h:''),function(cUrl){
-                if(cUrl&&m.isPopupOpen()){
-                  imgCache[v.w||v.id]=cUrl;
-                  var imgHdr='<div class="pop-img" style="background-image:url(\''+cUrl+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';
-                  m.setPopupContent(imgHdr+bodyHtml);
-                }
-              });
-            }
-          });
-        } else if(!v.w) {
-          var cKey='_c_'+v.id;
-          if(imgCache[cKey]){
-            var imgHdr='<div class="pop-img" style="background-image:url(\''+imgCache[cKey]+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';
-            m.setPopupContent(imgHdr+bodyHtml);
-          } else if(imgCache[cKey]===undefined) {
-            loadCommonsImg(v.n+(v.h?' '+v.h:''),function(cUrl){
-              if(cUrl){imgCache[cKey]=cUrl;if(m.isPopupOpen()){var imgHdr='<div class="pop-img" style="background-image:url(\''+cUrl+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';m.setPopupContent(imgHdr+bodyHtml);}}
-              else{imgCache[cKey]=null;}
-            });
-          }
+      var popupOpened=false;
+      getVenueImage(v,function(url){
+        if(url){
+          var imgHdr='<div class="pop-img" style="background-image:url(\''+url+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';
+          if(!popupOpened||m.isPopupOpen())m.setPopupContent(imgHdr+bodyHtml);
         }
-      }
+      });
+      m.openPopup();
+      popupOpened=true;
     });
     m.on('mouseout',function(){closeTimer=setTimeout(function(){m.closePopup();},350);});
     allMkrs[v.id]=m;
@@ -759,16 +690,10 @@ function openSP(id){
     img.onload=function(){img.classList.add('loaded');var ic=hero.querySelector('.hero-icon');if(ic)ic.style.opacity='0';};img.onerror=function(){img.remove()};img.src=url;
     var c=hero.firstChild;if(c)c.insertBefore(img,c.firstChild);
   }
-  function tryCommonsThenSV(){
-    loadCommonsImg(_v.n+(_v.h?' '+_v.h:''),function(cUrl){
-      if(cUrl){setHeroImg(cUrl);}
-      else{var sv=streetViewUrl(_v.lat,_v.lng);if(sv)setHeroImg(sv);}
-    });
-  }
-  if(v.img){setHeroImg(v.img);}
-  else if(v.w){loadWikiImg(v.w,function(url){
-    if(url){setHeroImg(url);}else{tryCommonsThenSV();}
-  });}else{tryCommonsThenSV();}
+  getVenueImage(v,function(url){
+    if(url){setHeroImg(url);}
+    else{var sv=streetViewUrl(_v.lat,_v.lng);if(sv)setHeroImg(sv);}
+  });
   // Load gallery via REST API (faster, single call, direct URLs)
   var gal=document.getElementById('spGallery');
   gal.innerHTML='<div class="sst" id="galHeader" style="display:none">Photos</div><div class="gallery" id="galRow"></div>';

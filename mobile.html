@@ -252,6 +252,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 
 <script src="venues.js"></script>
 <script src="shared.js"></script>
+<script src="wiki-images.js"></script>
 <script>
 // ===== DATA (inline, no external dependency) =====
 
@@ -502,6 +503,7 @@ function openSheet(id){
   }
   if(v.w) h+='<a class="sh-wiki" href="https://en.wikipedia.org/wiki/'+v.w+'" target="_blank" rel="noopener">Wikipedia →</a>';
   h+='<br><a class="sh-dir" href="https://maps.apple.com/?daddr='+v.lat+','+v.lng+'&dirflg=w" target="_blank" rel="noopener">Get Directions</a>';
+  h+='<div id="sheetImg"></div>';
   if(v.rel&&v.rel.length){
     h+='<div class="sh-section">Related</div><div class="sh-related">';
     for(var i=0;i<v.rel.length;i++){
@@ -514,6 +516,13 @@ function openSheet(id){
   document.getElementById('sheetBody').innerHTML=h;
   document.getElementById('sheet').className='open';
   document.getElementById('sheetBody').scrollTop=0;
+  var _sheetId=id;
+  getVenueImage(v,function(url){
+    if(url&&selectedId===_sheetId){
+      var el=document.getElementById('sheetImg');
+      if(el)el.innerHTML='<img src="'+url+'" alt="" style="width:100%;height:180px;object-fit:cover;border-radius:12px;margin-top:12px;display:block">';
+    }
+  });
 }
 
 function closeSheet(){
