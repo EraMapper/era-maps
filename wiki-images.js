@@ -79,6 +79,57 @@ function loadWikiImg(slug, cb) {
   document.head.appendChild(s); setTimeout(function () { try { s.remove(); } catch (e) { } }, 7000);
 }
 
+function loadCommonsGallery(query, cb) {
+  var cn = '_cg' + Math.random().toString(36).substr(2, 9), done = false;
+  var t = setTimeout(function () { if (done) return; done = true; cb([]); try { delete window[cn]; } catch (e) { } }, 8000);
+  window[cn] = function (d) {
+    if (done) return; done = true; clearTimeout(t); try {
+      var pages = d.query && d.query.pages ? Object.values(d.query.pages) : [];
+      var results = pages.filter(function (pg) {
+        if (!pg.imageinfo || !pg.imageinfo[0]) return false;
+        var ii = pg.imageinfo[0];
+        if (!ii.thumburl && !ii.url) return false;
+        var tt = pg.title || '';
+        if (!/\.(jpg|jpeg|png)$/i.test(tt)) return false;
+        if (/Commons-logo|Icon|Symbol|Flag_of|Logo|Pictogram|Map_of|Locator|Location_map|Wikimedia|Red_pog|Ambox|Nuvola|Padlock|OOjs|Wikidata|Information_icon|Gnome|Portal-|PD-icon|Gtk-dialog|Circle-icons|Noun_Project|Fairytale|Fxemoji|Breezeicons/i.test(tt)) return false;
+        return true;
+      }).map(function (pg) { var ii = pg.imageinfo[0]; return { title: pg.title, src: ii.thumburl || ii.url }; });
+      cb(results);
+    } catch (e) { cb([]); } try { delete window[cn]; } catch (e) { }
+  };
+  var s = document.createElement('script');
+  s.src = 'https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=' + encodeURIComponent(query + ' Los Angeles') + '&gsrnamespace=6&gsrlimit=8&prop=imageinfo&iiprop=url&iiurlwidth=400&format=json&callback=' + cn;
+  s.onerror = function () { if (done) return; done = true; clearTimeout(t); cb([]); try { delete window[cn]; } catch (e) { } };
+  document.head.appendChild(s); setTimeout(function () { try { s.remove(); } catch (e) { } }, 9000);
+}
+
+function loadWikiGallery(slug, cb) {
+  if (!slug) { cb([]); return; }
+  var cn = '_gal' + Math.random().toString(36).substr(2, 9), done = false;
+  var t = setTimeout(function () { if (done) return; done = true; cb([]); try { delete window[cn]; } catch (e) { } }, 10000);
+  window[cn] = function (d) {
+    if (done) return; done = true; clearTimeout(t);
+    try {
+      var pages = d.query && d.query.pages ? Object.values(d.query.pages) : [];
+      var results = pages.filter(function (pg) {
+        if (!pg.imageinfo || !pg.imageinfo[0]) return false;
+        var ii = pg.imageinfo[0]; if (!ii.thumburl && !ii.url) return false;
+        var t = pg.title || '';
+        if (!/\.(jpg|jpeg|png)$/i.test(t)) return false;
+        if (/Commons-logo|Icon|Symbol|Flag_of|Logo|Pictogram|Map_of|Locator|Location_map|Wikimedia|Red_pog|Ambox|Question_book|Edit-clear|Text-x|Folder_Hex|Disambig|Crystal_Clear|Nuvola|Padlock|Semi-protection|Lock-|OOjs|Increase2|Decrease2|Steady2|Star_full|Star_empty|Gold_medal|Silver_medal|Bronze_medal|Wikidata|Information_icon|Gnome|Replacement_character|Unbalanced|Search_icon|Portal-|P_vip|Emojione|Twemoji|Cscr-|PD-icon|Gtk-dialog|Circle-icons|Noun_Project|Fairytale|Silk-|Farm-Fresh|Fxemoji|Breezeicons|Splashscreen|LA_Skyline_Mountains2|LA.Skyline.Mountains/i.test(t)) return false;
+        if (isBadWikiImg(ii.thumburl || ii.url, t, ii.thumbwidth, ii.thumbheight)) return false;
+        return true;
+      }).map(function (pg) { var ii = pg.imageinfo[0]; return { title: pg.title, src: ii.thumburl || ii.url }; });
+      cb(results);
+    } catch (e) { cb([]); }
+    try { delete window[cn]; } catch (e) { }
+  };
+  var s = document.createElement('script');
+  s.src = 'https://en.wikipedia.org/w/api.php?action=query&titles=' + encodeURIComponent(decodeURIComponent(slug)) + '&generator=images&gimlimit=8&prop=imageinfo&iiprop=url&iiurlwidth=400&redirects=1&format=json&callback=' + cn;
+  s.onerror = function () { if (done) return; done = true; clearTimeout(t); cb([]); try { delete window[cn]; } catch (e) { } };
+  document.head.appendChild(s); setTimeout(function () { try { s.remove(); } catch (e) { } }, 11000);
+}
+
 // Main entry point: resolves the best image URL for a venue.
 // Tries in order: v.img → Wikipedia → Wikimedia Commons.
 // Calls cb synchronously on cache hit, asynchronously otherwise.

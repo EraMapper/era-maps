@@ -202,49 +202,9 @@ var EL={sunset:{1925:{l:'Roaring Twenties — Wild Beginnings',b:'Sunset Strip �
 var GOOGLE_API_KEY=localStorage.getItem('era_maps_gkey')||'';
 function setGoogleKey(k){GOOGLE_API_KEY=k;localStorage.setItem('era_maps_gkey',k);}
 if(!GOOGLE_API_KEY&&!localStorage.getItem('era_maps_gkey_skip')){var _k=prompt('Optional: Paste your Google API key for Street View photos.\nCancel to skip (you won\'t be asked again).');if(_k&&_k.trim()){setGoogleKey(_k.trim());}else{localStorage.setItem('era_maps_gkey_skip','1');}}
-function loadCommonsGallery(query,cb){
-  var cn='_cg'+Math.random().toString(36).substr(2,9),done=false;
-  var t=setTimeout(function(){if(done)return;done=true;cb([]);try{delete window[cn]}catch(e){}},8000);
-  window[cn]=function(d){if(done)return;done=true;clearTimeout(t);try{
-    var pages=d.query&&d.query.pages?Object.values(d.query.pages):[];
-    var results=pages.filter(function(pg){if(!pg.imageinfo||!pg.imageinfo[0])return false;var ii=pg.imageinfo[0];if(!ii.thumburl&&!ii.url)return false;var tt=pg.title||'';if(!/\.(jpg|jpeg|png)$/i.test(tt))return false;if(/Commons-logo|Icon|Symbol|Flag_of|Logo|Pictogram|Map_of|Locator|Location_map|Wikimedia|Red_pog|Ambox|Nuvola|Padlock|OOjs|Wikidata|Information_icon|Gnome|Portal-|PD-icon|Gtk-dialog|Circle-icons|Noun_Project|Fairytale|Fxemoji|Breezeicons/i.test(tt))return false;return true;}).map(function(pg){var ii=pg.imageinfo[0];return{title:pg.title,src:ii.thumburl||ii.url};});
-    cb(results);
-  }catch(e){cb([]);}try{delete window[cn]}catch(e){}};
-  var s=document.createElement('script');
-  s.src='https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch='+encodeURIComponent(query+' Los Angeles')+'&gsrnamespace=6&gsrlimit=8&prop=imageinfo&iiprop=url&iiurlwidth=400&format=json&callback='+cn;
-  s.onerror=function(){if(done)return;done=true;clearTimeout(t);cb([]);try{delete window[cn]}catch(e){}};
-  document.head.appendChild(s);setTimeout(function(){try{s.remove()}catch(e){}},9000);
-}
 function streetViewUrl(lat,lng,w,h){
   if(!GOOGLE_API_KEY)return null;
   return 'https://maps.googleapis.com/maps/api/streetview?size='+(w||500)+'x'+(h||300)+'&location='+lat+','+lng+'&fov=90&pitch=5&key='+GOOGLE_API_KEY;
-}
-function loadWikiGallery(slug,cb){
-  if(!slug){cb([]);return;}
-  // Single JSONP call: generator=images gets file list, prop=imageinfo resolves thumbnails — all at once
-  var cn='_gal'+Math.random().toString(36).substr(2,9),done=false;
-  var t=setTimeout(function(){if(done)return;done=true;cb([]);try{delete window[cn]}catch(e){}},10000);
-  window[cn]=function(d){
-    if(done)return;done=true;clearTimeout(t);
-    try{
-      var pages=d.query&&d.query.pages?Object.values(d.query.pages):[];
-      var results=pages.filter(function(pg){
-        if(!pg.imageinfo||!pg.imageinfo[0])return false;
-        var ii=pg.imageinfo[0];if(!ii.thumburl&&!ii.url)return false;
-        var t=pg.title||'';
-        if(!/\.(jpg|jpeg|png)$/i.test(t))return false;
-        if(/Commons-logo|Icon|Symbol|Flag_of|Logo|Pictogram|Map_of|Locator|Location_map|Wikimedia|Red_pog|Ambox|Question_book|Edit-clear|Text-x|Folder_Hex|Disambig|Crystal_Clear|Nuvola|Padlock|Semi-protection|Lock-|OOjs|Increase2|Decrease2|Steady2|Star_full|Star_empty|Gold_medal|Silver_medal|Bronze_medal|Wikidata|Information_icon|Gnome|Replacement_character|Unbalanced|Search_icon|Portal-|P_vip|Emojione|Twemoji|Cscr-|PD-icon|Gtk-dialog|Circle-icons|Noun_Project|Fairytale|Silk-|Farm-Fresh|Fxemoji|Breezeicons|Splashscreen|LA_Skyline_Mountains2|LA.Skyline.Mountains/i.test(t))return false;
-        if(isBadWikiImg(ii.thumburl||ii.url,t,ii.thumbwidth,ii.thumbheight))return false;
-        return true;
-      }).map(function(pg){var ii=pg.imageinfo[0];return {title:pg.title,src:ii.thumburl||ii.url};});
-      cb(results);
-    }catch(e){cb([]);}
-    try{delete window[cn]}catch(e){}
-  };
-  var s=document.createElement('script');
-  s.src='https://en.wikipedia.org/w/api.php?action=query&titles='+encodeURIComponent(decodeURIComponent(slug))+'&generator=images&gimlimit=8&prop=imageinfo&iiprop=url&iiurlwidth=400&redirects=1&format=json&callback='+cn;
-  s.onerror=function(){if(done)return;done=true;clearTimeout(t);cb([]);try{delete window[cn]}catch(e){}};
-  document.head.appendChild(s);setTimeout(function(){try{s.remove()}catch(e){}},11000);
 }
 var cY=1985,cH='sunset',map,allMkrs={},drag=false,aF='all',aS='all',addMode=false,userVenues=[],userPhotos={},panelSession=0;
 var allView=true,suppressZoomCheck=false,listOpen=false;
