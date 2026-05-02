@@ -558,37 +558,42 @@ function createAllMarkers(){
     var closeTimer=null;
     m.on('mouseover',function(){
       clearTimeout(closeTimer);
-      // Try to upgrade with Wikipedia image
-      if(v.w&&imgCache[v.w]){
+      // Try to upgrade with image: manual img field takes priority, then Wikipedia, then Commons
+      if(v.img){
+        var imgHdr='<div class="pop-img" style="background-image:url(\''+v.img+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';
+        m.setPopupContent(imgHdr+bodyHtml);
+      } else if(v.w&&imgCache[v.w]){
         var imgHdr='<div class="pop-img" style="background-image:url(\''+imgCache[v.w]+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';
         m.setPopupContent(imgHdr+bodyHtml);
       }
       m.openPopup();
-      if(v.w&&!imgCache[v.w]&&imgCache[v.w]===undefined){
-        loadWikiImg(v.w,function(url){
-          if(url&&m.isPopupOpen()){
-            var imgHdr='<div class="pop-img" style="background-image:url(\''+url+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';
+      if(!v.img){
+        if(v.w&&!imgCache[v.w]&&imgCache[v.w]===undefined){
+          loadWikiImg(v.w,function(url){
+            if(url&&m.isPopupOpen()){
+              var imgHdr='<div class="pop-img" style="background-image:url(\''+url+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';
+              m.setPopupContent(imgHdr+bodyHtml);
+            } else if(!url&&m.isPopupOpen()){
+              loadCommonsImg(v.n+(v.h?' '+v.h:''),function(cUrl){
+                if(cUrl&&m.isPopupOpen()){
+                  imgCache[v.w||v.id]=cUrl;
+                  var imgHdr='<div class="pop-img" style="background-image:url(\''+cUrl+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';
+                  m.setPopupContent(imgHdr+bodyHtml);
+                }
+              });
+            }
+          });
+        } else if(!v.w) {
+          var cKey='_c_'+v.id;
+          if(imgCache[cKey]){
+            var imgHdr='<div class="pop-img" style="background-image:url(\''+imgCache[cKey]+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';
             m.setPopupContent(imgHdr+bodyHtml);
-          } else if(!url&&m.isPopupOpen()){
+          } else if(imgCache[cKey]===undefined) {
             loadCommonsImg(v.n+(v.h?' '+v.h:''),function(cUrl){
-              if(cUrl&&m.isPopupOpen()){
-                imgCache[v.w||v.id]=cUrl;
-                var imgHdr='<div class="pop-img" style="background-image:url(\''+cUrl+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';
-                m.setPopupContent(imgHdr+bodyHtml);
-              }
+              if(cUrl){imgCache[cKey]=cUrl;if(m.isPopupOpen()){var imgHdr='<div class="pop-img" style="background-image:url(\''+cUrl+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';m.setPopupContent(imgHdr+bodyHtml);}}
+              else{imgCache[cKey]=null;}
             });
           }
-        });
-      } else if(!v.w) {
-        var cKey='_c_'+v.id;
-        if(imgCache[cKey]){
-          var imgHdr='<div class="pop-img" style="background-image:url(\''+imgCache[cKey]+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';
-          m.setPopupContent(imgHdr+bodyHtml);
-        } else if(imgCache[cKey]===undefined) {
-          loadCommonsImg(v.n+(v.h?' '+v.h:''),function(cUrl){
-            if(cUrl){imgCache[cKey]=cUrl;if(m.isPopupOpen()){var imgHdr='<div class="pop-img" style="background-image:url(\''+cUrl+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';m.setPopupContent(imgHdr+bodyHtml);}}
-            else{imgCache[cKey]=null;}
-          });
         }
       }
     });
@@ -753,7 +758,8 @@ function openSP(id){
       else{var sv=streetViewUrl(_v.lat,_v.lng);if(sv)setHeroImg(sv);}
     });
   }
-  if(v.w){loadWikiImg(v.w,function(url){
+  if(v.img){setHeroImg(v.img);}
+  else if(v.w){loadWikiImg(v.w,function(url){
     if(url){setHeroImg(url);}else{tryCommonsThenSV();}
   });}else{tryCommonsThenSV();}
   // Load gallery via REST API (faster, single call, direct URLs)
