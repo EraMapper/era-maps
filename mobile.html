@@ -224,6 +224,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
    <option value="demolished">🟤 Demolished</option>
    <option value="transformed">🔄 Transformed</option>
   </select>
+  <select class="fsel" id="hoodSelect">
+   <option value="">All Neighborhoods</option>
+  </select>
  </div>
  <div id="decadeRow">
   <div id="yearLabel">Now</div>
@@ -266,7 +269,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 
 // ===== STATE =====
 var userLat=34.0522,userLng=-118.2437;
-var radius=999,activeCat='all',searchTerm='',activeStatus='all',activeYear=2026;
+var radius=999,activeCat='all',searchTerm='',activeStatus='all',activeYear=2026,activeHood='';
 var selectedId=null,hasGPS=false;
 var mapObj=null,mapReady=false,markers={},visibleIds={};
 var tracking=false,watchId=null;
@@ -344,6 +347,7 @@ function getFiltered(){
     if(activeStatus!=='all'&&v.s!==activeStatus) continue;
     if(v._d>radius&&radius<900) continue;
     if(activeCat!=='all'&&v.c!==activeCat) continue;
+    if(activeHood&&v.h!==activeHood) continue;
     if(s){
       var hay=(v.n+' '+(v.t||'')+' '+hn(v.h)+' '+(v.a||'')).toLowerCase();
       if(hay.indexOf(s)<0) continue;
@@ -1025,6 +1029,25 @@ document.getElementById('tourExit').addEventListener('click',exitTour);
 // Radius select
 document.getElementById('radiusSelect').addEventListener('change',function(){
   radius=parseFloat(this.value);
+  if(radius<900){activeHood='';document.getElementById('hoodSelect').value='';}
+  update();
+});
+
+// Neighborhood select
+document.getElementById('hoodSelect').addEventListener('change',function(){
+  activeHood=this.value;
+  if(activeHood){
+    radius=999;
+    document.getElementById('radiusSelect').value='999';
+    if(mapReady){
+      var pts=V.filter(function(v){return v.h===activeHood;});
+      if(pts.length){
+        var lats=pts.map(function(v){return v.lat;});
+        var lngs=pts.map(function(v){return v.lng;});
+        mapObj.fitBounds([[Math.min.apply(null,lats),Math.min.apply(null,lngs)],[Math.max.apply(null,lats),Math.max.apply(null,lngs)]],{padding:[40,40]});
+      }
+    }
+  }
   update();
 });
 
@@ -1179,6 +1202,13 @@ document.getElementById('gpsBtn').addEventListener('click',function(){
 });
 
 // ===== BOOT =====
+// Populate neighborhood dropdown
+(function(){
+  var hs=document.getElementById('hoodSelect');
+  var keys=Object.keys(HOODS).sort(function(a,b){return HOODS[a].localeCompare(HOODS[b]);});
+  keys.forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=HOODS[k];hs.appendChild(o);});
+})();
+
 // 1. Render list data (in background, for when user switches to list)
 update();
 
