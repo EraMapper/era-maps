@@ -397,7 +397,6 @@ function init(){
     this.classList.toggle('active',listOpen);
     if(listOpen){this.style.display='none';renderListPanel();}
   };
-  document.addEventListener('click',function(e){if(!listOpen)return;if(!document.getElementById('listPanel').contains(e.target)&&!e.target.closest('#listToggle'))closeList();});
   document.getElementById('listClose').onclick=closeList;
   document.getElementById('addBtn').onclick=function(){toggleAdd();};
   document.getElementById('listContent').addEventListener('click',function(e){
