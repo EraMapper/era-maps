@@ -369,14 +369,11 @@ function init(){
     gpsTracking=true;
     btn.classList.add('tracking');
     try{
-      navigator.geolocation.getCurrentPosition(function(p){
-        placeUserDot(p.coords.latitude,p.coords.longitude);
-      },function(){},{enableHighAccuracy:true,timeout:8000});
       gpsWatchId=navigator.geolocation.watchPosition(function(p){
         placeUserDot(p.coords.latitude,p.coords.longitude);
       },function(){
         gpsTracking=false;gpsWatchId=null;btn.classList.remove('tracking');
-      },{enableHighAccuracy:true});
+      },{enableHighAccuracy:true,timeout:10000,maximumAge:30000});
     }catch(e){
       gpsTracking=false;gpsWatchId=null;btn.classList.remove('tracking');
     }
