@@ -570,7 +570,7 @@ function createAllMarkers(){
             var imgHdr='<div class="pop-img" style="background-image:url(\''+url+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';
             m.setPopupContent(imgHdr+bodyHtml);
           } else if(!url&&m.isPopupOpen()){
-            loadCommonsImg(v.n,function(cUrl){
+            loadCommonsImg(v.n+(v.h?' '+v.h:''),function(cUrl){
               if(cUrl&&m.isPopupOpen()){
                 imgCache[v.w||v.id]=cUrl;
                 var imgHdr='<div class="pop-img" style="background-image:url(\''+cUrl+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';
@@ -585,7 +585,7 @@ function createAllMarkers(){
           var imgHdr='<div class="pop-img" style="background-image:url(\''+imgCache[cKey]+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';
           m.setPopupContent(imgHdr+bodyHtml);
         } else if(imgCache[cKey]===undefined) {
-          loadCommonsImg(v.n,function(cUrl){
+          loadCommonsImg(v.n+(v.h?' '+v.h:''),function(cUrl){
             if(cUrl){imgCache[cKey]=cUrl;if(m.isPopupOpen()){var imgHdr='<div class="pop-img" style="background-image:url(\''+cUrl+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';m.setPopupContent(imgHdr+bodyHtml);}}
             else{imgCache[cKey]=null;}
           });
@@ -748,7 +748,7 @@ function openSP(id){
     var c=hero.firstChild;if(c)c.insertBefore(img,c.firstChild);
   }
   function tryCommonsThenSV(){
-    loadCommonsImg(_v.n,function(cUrl){
+    loadCommonsImg(_v.n+(_v.h?' '+_v.h:''),function(cUrl){
       if(cUrl){setHeroImg(cUrl);}
       else{var sv=streetViewUrl(_v.lat,_v.lng);if(sv)setHeroImg(sv);}
     });
@@ -780,10 +780,10 @@ function openSP(id){
   if(v.w){
     loadWikiGallery(v.w,function(photos){
       appendGalPhotos(photos);
-      loadCommonsGallery(_v.n,function(cPhotos){appendGalPhotos(cPhotos);});
+      loadCommonsGallery(_v.n+(_v.h?' '+_v.h:''),function(cPhotos){appendGalPhotos(cPhotos);});
     });
   } else {
-    loadCommonsGallery(_v.n,function(cPhotos){
+    loadCommonsGallery(_v.n+(_v.h?' '+_v.h:''),function(cPhotos){
       appendGalPhotos(cPhotos);
       if(!cPhotos.length){var sv=streetViewUrl(_v.lat,_v.lng,400,250);if(sv){galH.style.display='block';var im=document.createElement('img');im.alt='Street View';im.onclick=function(){swapHero(streetViewUrl(_v.lat,_v.lng))};im.src=sv;row.appendChild(im);}}
     });
