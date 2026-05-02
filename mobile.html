@@ -178,6 +178,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .vm-tour-num.visited{background:rgba(90,90,106,.5);box-shadow:none;border-color:var(--bd)}
 .vm-tour-num.current{transform:scale(1.3);box-shadow:0 0 14px rgba(255,45,123,.7);animation:pulse-tour 2s ease-out infinite}
 @keyframes pulse-tour{0%{box-shadow:0 0 8px rgba(255,45,123,.5)}50%{box-shadow:0 0 18px rgba(255,45,123,.8)}100%{box-shadow:0 0 8px rgba(255,45,123,.5)}}
+/* IMAGE CAROUSEL */
+.sh-carousel{margin-top:12px;border-radius:12px;overflow:hidden}
+.sh-car-track{display:flex;transition:transform .28s cubic-bezier(.4,0,.2,1);will-change:transform}
+.sh-car-slide{min-width:100%;height:180px;flex-shrink:0}
+.sh-car-slide img{width:100%;height:100%;object-fit:cover;display:block}
+.sh-car-dots{display:flex;justify-content:center;align-items:center;gap:5px;padding:7px 0 2px}
+.sh-car-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.25);transition:background .2s,transform .2s}
+.sh-car-dot.active{background:var(--np);transform:scale(1.3)}
 </style>
 </head>
 <body>
@@ -437,6 +445,67 @@ function buildLineage(venueId){
   return result;
 }
 
+// ===== IMAGE CAROUSEL =====
+function fetchCarouselImages(v, cb) {
+  var query = v.n + (v.h ? ' ' + v.h : '');
+  var manual = v.img ? [{src: v.img, title: ''}] : [];
+  function dedup(arr) {
+    var seen = {};
+    return arr.filter(function(img) {
+      if (!img.src || seen[img.src]) return false;
+      seen[img.src] = true;
+      return true;
+    });
+  }
+  if (v.w) {
+    var wikiPhotos = null, cPhotos = null;
+    function maybeDone() {
+      if (wikiPhotos === null || cPhotos === null) return;
+      cb(dedup(manual.concat(wikiPhotos, cPhotos)).slice(0, 8));
+    }
+    loadWikiGallery(v.w, function(p) { wikiPhotos = p; maybeDone(); });
+    loadCommonsGallery(query, function(p) { cPhotos = p; maybeDone(); });
+  } else {
+    loadCommonsGallery(query, function(p) {
+      cb(dedup(manual.concat(p)).slice(0, 8));
+    });
+  }
+}
+
+function buildCarousel(el, images) {
+  if (!images.length) return;
+  var idx = 0;
+  var multi = images.length > 1;
+  el.innerHTML = '<div class="sh-car-track">' +
+    images.map(function(img) {
+      return '<div class="sh-car-slide"><img src="' + img.src + '" alt="" loading="lazy"></div>';
+    }).join('') +
+    '</div>' +
+    (multi ? '<div class="sh-car-dots">' +
+      images.map(function(_, i) {
+        return '<span class="sh-car-dot' + (i === 0 ? ' active' : '') + '"></span>';
+      }).join('') +
+    '</div>' : '');
+  if (!multi) return;
+  var track = el.querySelector('.sh-car-track');
+  var dotEls = el.querySelectorAll('.sh-car-dot');
+  function goTo(n) {
+    idx = Math.max(0, Math.min(n, images.length - 1));
+    track.style.transform = 'translateX(-' + (idx * 100) + '%)';
+    for (var i = 0; i < dotEls.length; i++)
+      dotEls[i].className = 'sh-car-dot' + (i === idx ? ' active' : '');
+  }
+  var tx = 0, ty = 0;
+  track.addEventListener('touchstart', function(e) {
+    tx = e.touches[0].clientX; ty = e.touches[0].clientY;
+  }, {passive: true});
+  track.addEventListener('touchend', function(e) {
+    var dx = e.changedTouches[0].clientX - tx;
+    var dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30) goTo(idx + (dx < 0 ? 1 : -1));
+  }, {passive: true});
+}
+
 // ===== STORY SHEET =====
 function openSheet(id){
   var v=null;
@@ -503,7 +572,7 @@ function openSheet(id){
   }
   if(v.w) h+='<a class="sh-wiki" href="https://en.wikipedia.org/wiki/'+v.w+'" target="_blank" rel="noopener">Wikipedia →</a>';
   h+='<br><a class="sh-dir" href="https://maps.apple.com/?daddr='+v.lat+','+v.lng+'&dirflg=w" target="_blank" rel="noopener">Get Directions</a>';
-  h+='<div id="sheetImg"></div>';
+  h+='<div id="sheetCarousel" class="sh-carousel"></div>';
   if(v.rel&&v.rel.length){
     h+='<div class="sh-section">Related</div><div class="sh-related">';
     for(var i=0;i<v.rel.length;i++){
@@ -517,11 +586,10 @@ function openSheet(id){
   document.getElementById('sheet').className='open';
   document.getElementById('sheetBody').scrollTop=0;
   var _sheetId=id;
-  getVenueImage(v,function(url){
-    if(url&&selectedId===_sheetId){
-      var el=document.getElementById('sheetImg');
-      if(el)el.innerHTML='<img src="'+url+'" alt="" style="width:100%;height:180px;object-fit:cover;border-radius:12px;margin-top:12px;display:block">';
-    }
+  fetchCarouselImages(v,function(images){
+    if(selectedId!==_sheetId)return;
+    var el=document.getElementById('sheetCarousel');
+    if(el)buildCarousel(el,images);
   });
 }
 
