@@ -232,6 +232,12 @@ function streetViewUrl(lat,lng,w,h){
   if(!GOOGLE_API_KEY)return null;
   return 'https://maps.googleapis.com/maps/api/streetview?size='+(w||500)+'x'+(h||300)+'&location='+lat+','+lng+'&fov=90&pitch=5&key='+GOOGLE_API_KEY;
 }
+function isBadWikiImg(url,title,w,h){
+  if(/\.svg/i.test(url||''))return true;
+  if((w&&w<100)||(h&&h<100))return true;
+  var s=(title||url||'').toLowerCase();
+  return /logo|icon|flag|map|diagram|chart|coat.of.arms|seal|emblem|portrait|headshot/.test(s);
+}
 function loadWikiImg(slug,cb){
   if(!slug){cb(null);return;}if(imgCache[slug]!==undefined){cb(imgCache[slug]);return;}
   var cn='_w'+Math.random().toString(36).substr(2,9),done=false;
@@ -241,7 +247,7 @@ function loadWikiImg(slug,cb){
     var t2=setTimeout(function(){if(done2)return;done2=true;imgCache[slug]=null;cb(null);try{delete window[cn2]}catch(e){}},6000);
     window[cn2]=function(d){if(done2)return;done2=true;clearTimeout(t2);try{
       var pages=d.query&&d.query.pages?Object.values(d.query.pages):[];
-      var found=pages.filter(function(pg){if(!pg.imageinfo||!pg.imageinfo[0])return false;var ii=pg.imageinfo[0];if(!ii.thumburl&&!ii.url)return false;var tt=pg.title||'';if(!/\.(jpg|jpeg|png)$/i.test(tt))return false;if(/Commons-logo|Icon|Symbol|Flag_of|Logo|Pictogram|Map_of|Locator|Location_map|Wikimedia|Red_pog|Ambox|Question_book|Edit-clear|Text-x|Folder_Hex|Disambig|Crystal_Clear|Nuvola|Padlock|Semi-protection|Lock-|OOjs|Increase2|Decrease2|Steady2|Star_full|Star_empty|Gold_medal|Silver_medal|Bronze_medal|Wikidata|Information_icon|Gnome|Replacement_character|Unbalanced|Search_icon|Portal-|P_vip|Emojione|Twemoji|Cscr-|PD-icon|Gtk-dialog|Circle-icons|Noun_Project|Fairytale|Silk-|Farm-Fresh|Fxemoji|Breezeicons|Splashscreen|LA_Skyline_Mountains2|LA.Skyline.Mountains/i.test(tt))return false;return true;});
+      var found=pages.filter(function(pg){if(!pg.imageinfo||!pg.imageinfo[0])return false;var ii=pg.imageinfo[0];if(!ii.thumburl&&!ii.url)return false;var tt=pg.title||'';if(!/\.(jpg|jpeg|png)$/i.test(tt))return false;if(/Commons-logo|Icon|Symbol|Flag_of|Logo|Pictogram|Map_of|Locator|Location_map|Wikimedia|Red_pog|Ambox|Question_book|Edit-clear|Text-x|Folder_Hex|Disambig|Crystal_Clear|Nuvola|Padlock|Semi-protection|Lock-|OOjs|Increase2|Decrease2|Steady2|Star_full|Star_empty|Gold_medal|Silver_medal|Bronze_medal|Wikidata|Information_icon|Gnome|Replacement_character|Unbalanced|Search_icon|Portal-|P_vip|Emojione|Twemoji|Cscr-|PD-icon|Gtk-dialog|Circle-icons|Noun_Project|Fairytale|Silk-|Farm-Fresh|Fxemoji|Breezeicons|Splashscreen|LA_Skyline_Mountains2|LA.Skyline.Mountains/i.test(tt))return false;if(isBadWikiImg(ii.thumburl||ii.url,tt,ii.thumbwidth,ii.thumbheight))return false;return true;});
       var u=found.length>0?(found[0].imageinfo[0].thumburl||found[0].imageinfo[0].url):null;
       imgCache[slug]=u;cb(u);
     }catch(e){imgCache[slug]=null;cb(null);}try{delete window[cn2]}catch(e){}};
@@ -249,7 +255,7 @@ function loadWikiImg(slug,cb){
     s2.onerror=function(){if(done2)return;done2=true;clearTimeout(t2);imgCache[slug]=null;cb(null);try{delete window[cn2]}catch(e){}};document.head.appendChild(s2);setTimeout(function(){try{s2.remove()}catch(e){}},7000);
   }
   window[cn]=function(d){if(done)return;done=true;clearTimeout(t);try{var p=Object.values(d.query.pages)[0
-];var u=p&&p.thumbnail?p.thumbnail.source:null;if(u){imgCache[slug]=u;cb(u);}else{fallbackGallery();}}catch(e){fallbackGallery();}try{delete window[cn]}catch(e){}};
+];var u=p&&p.thumbnail?p.thumbnail.source:null;if(u&&isBadWikiImg(u,p.pageimage,p.thumbnail.width,p.thumbnail.height))u=null;if(u){imgCache[slug]=u;cb(u);}else{fallbackGallery();}}catch(e){fallbackGallery();}try{delete window[cn]}catch(e){}};
   var s=document.createElement('script');s.src='https://en.wikipedia.org/w/api.php?action=query&titles='+encodeURIComponent(decodeURIComponent(slug))+'&prop=pageimages&pithumbsize=500&redirects=1&format=json&callback='+cn;
   s.onerror=function(){if(done)return;done=true;clearTimeout(t);imgCache[slug]=null;cb(null);try{delete window[cn]}catch(e){}};document.head.appendChild(s);setTimeout(function(){try{s.remove()}catch(e){}},7000);
 }
@@ -268,6 +274,7 @@ function loadWikiGallery(slug,cb){
         var t=pg.title||'';
         if(!/\.(jpg|jpeg|png)$/i.test(t))return false;
         if(/Commons-logo|Icon|Symbol|Flag_of|Logo|Pictogram|Map_of|Locator|Location_map|Wikimedia|Red_pog|Ambox|Question_book|Edit-clear|Text-x|Folder_Hex|Disambig|Crystal_Clear|Nuvola|Padlock|Semi-protection|Lock-|OOjs|Increase2|Decrease2|Steady2|Star_full|Star_empty|Gold_medal|Silver_medal|Bronze_medal|Wikidata|Information_icon|Gnome|Replacement_character|Unbalanced|Search_icon|Portal-|P_vip|Emojione|Twemoji|Cscr-|PD-icon|Gtk-dialog|Circle-icons|Noun_Project|Fairytale|Silk-|Farm-Fresh|Fxemoji|Breezeicons|Splashscreen|LA_Skyline_Mountains2|LA.Skyline.Mountains/i.test(t))return false;
+        if(isBadWikiImg(ii.thumburl||ii.url,t,ii.thumbwidth,ii.thumbheight))return false;
         return true;
       }).map(function(pg){var ii=pg.imageinfo[0];return {title:pg.title,src:ii.thumburl||ii.url};});
       cb(results);
