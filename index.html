@@ -530,7 +530,6 @@ function createAllMarkers(){
     var closeTimer=null;
     m.on('mouseover',function(){
       clearTimeout(closeTimer);
-      if(document.getElementById('sP').classList.contains('open'))return;
       // Try to upgrade with Wikipedia image
       if(v.w&&imgCache[v.w]){
         var imgHdr='<div class="pop-img" style="background-image:url(\''+imgCache[v.w]+'\')"><div class="pop-img-fade" style="background:'+v.g+'"></div></div>';
