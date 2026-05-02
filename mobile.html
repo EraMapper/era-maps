@@ -461,13 +461,17 @@ function fetchCarouselImages(v, cb) {
     var wikiPhotos = null, cPhotos = null;
     function maybeDone() {
       if (wikiPhotos === null || cPhotos === null) return;
-      cb(dedup(manual.concat(wikiPhotos, cPhotos)).slice(0, 8));
+      var result = dedup(manual.concat(wikiPhotos, cPhotos)).slice(0, 8);
+      console.log('[carousel] "' + v.n + '" — manual:' + manual.length + ' wiki:' + wikiPhotos.length + ' commons:' + cPhotos.length + ' → total:' + result.length);
+      cb(result);
     }
-    loadWikiGallery(v.w, function(p) { wikiPhotos = p; maybeDone(); });
-    loadCommonsGallery(query, function(p) { cPhotos = p; maybeDone(); });
+    loadWikiGallery(v.w, function(p) { console.log('[carousel] loadWikiGallery returned', p.length, 'images for', v.w); wikiPhotos = p; maybeDone(); });
+    loadCommonsGallery(query, function(p) { console.log('[carousel] loadCommonsGallery returned', p.length, 'images for query "' + query + '"'); cPhotos = p; maybeDone(); });
   } else {
     loadCommonsGallery(query, function(p) {
-      cb(dedup(manual.concat(p)).slice(0, 8));
+      var result = dedup(manual.concat(p)).slice(0, 8);
+      console.log('[carousel] "' + v.n + '" (no wiki) — manual:' + manual.length + ' commons:' + p.length + ' → total:' + result.length);
+      cb(result);
     });
   }
 }
