@@ -387,6 +387,7 @@ function init(){
   document.getElementById('listClose').onclick=closeList;
   document.getElementById('addBtn').onclick=function(){toggleAdd();};
   document.getElementById('listContent').addEventListener('click',function(e){
+    e.stopPropagation();
     var item=e.target.closest('.lv-item');if(!item)return;
     var id=item.dataset.id;if(!id)return;
     var all=V.concat(userVenues);var v=all.find(function(x){return x.id===id;});
