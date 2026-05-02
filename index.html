@@ -20,14 +20,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .is{color:var(--ts);font-size:14px;margin:12px 0 28px;letter-spacing:3px;text-transform:uppercase}
 .ib{background:linear-gradient(135deg,var(--np),var(--na));border:none;color:var(--bg);padding:14px 40px;border-radius:30px;font-size:15px;cursor:pointer;font-weight:700;letter-spacing:1px}
 .ib:hover{transform:scale(1.04);box-shadow:0 0 30px rgba(255,45,123,.4)}
-#leftNav{position:fixed;top:0;left:0;z-index:100;width:160px;height:100%;padding:16px 10px 80px;display:flex;flex-direction:column;pointer-events:none;background:linear-gradient(to top,rgba(10,10,15,.92) 0%,transparent 140px),linear-gradient(90deg,rgba(10,10,15,.92) 0%,rgba(10,10,15,.85) 50%,rgba(10,10,15,.4) 80%,rgba(10,10,15,.18) 100%);overflow:hidden}
-#leftNav>*{pointer-events:auto}
-.ln-logo{font-size:26px;font-weight:900;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--np),var(--na));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:18px}
+.tl-logo{position:absolute;left:20px;bottom:18px;font-size:15px;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:linear-gradient(135deg,var(--np),var(--na));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;pointer-events:none;line-height:1}
+#listToggle{position:fixed;top:14px;left:14px;z-index:201;width:36px;height:36px;border-radius:8px;background:rgba(26,26,36,.85);backdrop-filter:blur(12px);border:1px solid var(--bd);color:var(--ts);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;padding:0}
+#listToggle:hover{background:rgba(40,40,55,.95);color:var(--np)}
+#listToggle.active{border-color:var(--np);color:var(--np)}
+#listOverlay{display:none;position:fixed;inset:0;z-index:199}
+#listOverlay.show{display:block}
+#listPanel{position:fixed;top:0;left:0;bottom:0;width:280px;z-index:200;background:rgba(13,13,20,.97);backdrop-filter:blur(20px);border-right:1px solid var(--bd);transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden}
 #citySelect{background:rgba(26,26,36,.85);backdrop-filter:blur(12px);border:1px solid var(--bd);border-radius:20px;color:var(--ts);font-size:10px;letter-spacing:1px;cursor:pointer;padding:4px 8px;-webkit-appearance:none;appearance:none;outline:none}
 #citySelect option{background:var(--cd);color:var(--tx)}
 .ln-label{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--tm);margin-bottom:6px;font-weight:600}
-#hoodBar{display:flex;flex-direction:column;gap:3px;flex:1 1 auto;overflow-y:auto;min-height:0;padding-bottom:32px;mask-image:linear-gradient(to bottom,black 92%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,black 92%,transparent 100%);scrollbar-width:none}
-#hoodBar::-webkit-scrollbar{display:none}
+#listPanel.open{transform:translateX(0)}
 .hc{padding:5px 8px;border-radius:10px;background:rgba(26,26,36,.7);border:1px solid transparent;font-size:11px;font-weight:600;cursor:pointer;transition:.2s;display:flex;justify-content:space-between;align-items:center}
 .hc:hover{border-color:var(--bd);background:rgba(26,26,36,.9)}
 .hc.active{background:linear-gradient(135deg,rgba(255,45,123,.15),rgba(255,179,71,.1));border-color:var(--np);color:var(--tx)}
@@ -40,12 +43,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .cat-dd{width:auto}.cat-dd-list{min-width:120px}
 .fsel{padding:4px 20px 4px 8px!important}
 .cat-dd-btn{padding:4px 24px 4px 10px!important}
-#searchWrap{position:fixed;top:14px;left:172px;z-index:101;display:flex;gap:6px;align-items:center}
+#searchWrap{position:fixed;top:14px;left:60px;z-index:101;display:flex;gap:6px;align-items:center}
 #controlsWrap{position:fixed;top:14px;right:14px;z-index:101;display:flex;gap:6px;align-items:center}
 #searchBox{width:0;padding:0;background:rgba(26,26,36,.92);backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:20px;color:var(--tx);font-size:13px;transition:width .3s,padding .3s;overflow:hidden;outline:none}
 #searchBox.open{width:240px;padding:8px 16px}
 #searchBox::placeholder{color:var(--tm)}
-#searchResults{position:fixed;top:58px;left:172px;z-index:101;width:280px;max-height:340px;overflow-y:auto;background:rgba(19,19,26,.95);backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:14px;display:none;box-shadow:0 20px 40px rgba(0,0,0,.5)}
+#searchResults{position:fixed;top:58px;left:60px;z-index:101;width:280px;max-height:340px;overflow-y:auto;background:rgba(19,19,26,.95);backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:14px;display:none;box-shadow:0 20px 40px rgba(0,0,0,.5)}
 #searchResults.show{display:block}
 .sr-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--bd);transition:.15s}
 .sr-item:hover{background:rgba(255,45,123,.06)}
@@ -146,11 +149,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 #gpsBtn.loading{border-color:var(--ts);color:var(--ts);animation:gpsPulse 1s ease-in-out infinite}
 #gpsBtn.tracking{border-color:var(--np);color:var(--np)}
 @keyframes gpsPulse{0%,100%{opacity:1}50%{opacity:0.35}}
-#listToggle{padding:3px 8px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:none;border:1px solid var(--bd);border-radius:6px;color:var(--tm);cursor:pointer;margin-bottom:8px;align-self:flex-start;transition:.15s}
-#listToggle.active{background:linear-gradient(135deg,var(--np),var(--na));color:var(--bg);border-color:transparent}
-#listPanel{display:none;flex-direction:column;flex:1;min-height:0;overflow:hidden}
-#listPanel.show{display:flex}
-#listCount{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--tm);padding:14px 12px 8px;flex-shrink:0;border-bottom:1px solid var(--bd)}
+#listCount{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--tm);padding:60px 14px 8px;flex-shrink:0;border-bottom:1px solid var(--bd)}
 #listContent{overflow-y:auto;flex:1;padding:8px 8px 16px;scrollbar-width:none}
 #listContent::-webkit-scrollbar{display:none}
 .lv-item{background:rgba(26,26,36,.5);border:1px solid transparent;border-radius:10px;padding:8px 10px;margin-bottom:5px;cursor:pointer;transition:.15s}
@@ -175,16 +174,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <body>
 <div id="map"></div>
 <div id="intro"><div class="it">ERA MAPS</div><div class="is">Los Angeles Through Time</div><div id="introC" style="color:var(--ts);font-size:13px;margin-bottom:20px"></div><button class="ib" id="enterBtn">EXPLORE</button></div>
-<div id="leftNav">
-  <div class="ln-logo">ERA MAPS</div>
-  <button id="listToggle" class="active">☰ List</button>
-  <div id="listPanel" class="show"><div id="listCount"></div><div id="listContent"></div></div>
-  <div id="hoodBar" style="display:none"></div>
-</div>
+<button id="listToggle" title="Venue list">☰</button>
+<div id="listOverlay"></div>
+<div id="listPanel"><div id="listCount"></div><div id="listContent"></div></div>
 <div id="searchWrap"><input type="text" id="searchBox" placeholder="Search places..."><button id="searchBtn">🔍</button></div>
 <div id="controlsWrap"><select id="citySelect"><option value="la" selected>🌴 Los Angeles</option><option value="ny" disabled>🗽 New York</option><option value="lon" disabled>🇬🇧 London</option><option value="tok" disabled>⛩️ Tokyo</option></select><div class="cat-dd" id="catDd"><div class="cat-dd-btn" id="catDdBtn" tabindex="0"><span class="cd-label">All types</span></div><div class="cat-dd-list" id="catDdList"><div class="cat-dd-item selected" data-val="all">All types</div><div class="cat-dd-item" data-val="food"><span class="cd-dot" style="background:#5c7cfa"></span>Food</div><div class="cat-dd-item" data-val="music"><span class="cd-dot" style="background:#ff2d7b"></span>Music</div><div class="cat-dd-item" data-val="nightlife"><span class="cd-dot" style="background:#7c4dff"></span>Nightlife</div><div class="cat-dd-item" data-val="culture"><span class="cd-dot" style="background:#42a5f5"></span>Culture</div><div class="cat-dd-item" data-val="shop"><span class="cd-dot" style="background:#26c6da"></span>Shops</div><div class="cat-dd-item" data-val="hotel"><span class="cd-dot" style="background:#ffb347"></span>Hotels</div><div class="cat-dd-item" data-val="community"><span class="cd-dot" style="background:#66bb6a"></span>Community</div></div></div><select class="fsel" id="statusSelect"><option value="all">All status</option><option value="active">🌈 Still here</option><option value="closed">🩶 Gone</option><option value="demolished">🟤 Demolished</option><option value="transformed">🔄 Transformed</option></select><select id="radiusSelect" class="fsel" disabled><option value="999">All distances</option><option value="0.5">½ mile</option><option value="1">1 mile</option><option value="3">3 miles</option><option value="5">5 miles</option><option value="10">10 miles</option></select><select id="hoodSelect" class="fsel"></select><button id="addBtn" title="Add a location">+</button></div>
 <div id="searchResults"></div>
-<div id="timeline"><div class="tc"><div class="tyd"><div class="ty" id="yD">1985</div><div class="tel" id="eL"></div><div class="vc" id="vC"></div></div><div class="sc"><div class="st" id="sT"><div class="sf" id="sF"></div><div class="sth" id="sTh"></div></div><div class="stk" id="sTk"></div></div></div></div>
+<div id="timeline"><div class="tl-logo">ERA MAPS</div><div class="tc"><div class="tyd"><div class="ty" id="yD">1985</div><div class="tel" id="eL"></div><div class="vc" id="vC"></div></div><div class="sc"><div class="st" id="sT"><div class="sf" id="sF"></div><div class="sth" id="sTh"></div></div><div class="stk" id="sTk"></div></div></div></div>
 <div class="sp" id="sP"><div class="sph" id="spH"></div><div class="spb"><div class="spt" id="spT"></div><div class="spn" id="spN"></div><div class="spa" id="spA"></div><div id="spCW"></div><div id="spGallery"></div><div class="sst">About</div><div class="spd" id="spD"></div><div class="sst">Timeline</div><div class="stl" id="spTL"></div><div class="sst">Tags</div><div class="stg" id="spTG"></div><div id="spRelWrap" style="display:none"><div class="sst">Related</div><div class="stg" id="spRel"></div></div><div id="spWikiLink"></div><div id="spPhotoAdd"></div><div class="spn2">📸 Photos via Wikipedia • Drag or paste to contribute</div></div></div>
 <div id="addPanel"><h3>📍 Add a Location</h3><div class="ab-help">Click map to set coords. Your addition is shared with all users.</div><input id="ap-name" placeholder="Name"><input id="ap-addr" placeholder="Address"><select id="ap-hood"></select><select id="ap-cat"><option value="music">🎵 Music</option><option value="food">🍸 Bar/Restaurant</option><option value="hotel">🏨 Hotel</option><option value="culture">🎭 Culture</option><option value="shop">🛍️ Shop</option></select><input id="ap-year" placeholder="Year founded" type="number"><input id="ap-endyr" placeholder="Year closed (blank if open)"><textarea id="ap-desc" placeholder="Description..."></textarea><input id="ap-wiki" placeholder="Wikipedia article (optional)"><input id="ap-coords" placeholder="Lat, Lng (click map)" readonly><div class="abr"><button class="ab-cancel" onclick="toggleAdd()">Cancel</button><button class="ab-save" onclick="saveUserVenue()">Save</button></div></div>
 <button id="gpsBtn" title="Show my location">◎</button>
@@ -278,7 +274,7 @@ function loadWikiGallery(slug,cb){
   document.head.appendChild(s);setTimeout(function(){try{s.remove()}catch(e){}},11000);
 }
 var cY=1985,cH='sunset',map,allMkrs={},drag=false,aF='all',aS='all',addMode=false,userVenues=[],userPhotos={},panelSession=0;
-var allView=true,suppressZoomCheck=false,listOpen=true;
+var allView=true,suppressZoomCheck=false,listOpen=false;
 var userLat=34.0522,userLng=-118.2437,hasGPS=false,radius=999;
 function hdist(a,b,c,d){var R=3958.8,p=(c-a)*Math.PI/180,q=(d-b)*Math.PI/180,e=Math.sin(p/2)*Math.sin(p/2)+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(q/2)*Math.sin(q/2);return R*2*Math.atan2(Math.sqrt(e),Math.sqrt(1-e));}
 function fd(d){if(!d&&d!==0)return '';return d<0.1?'<0.1 mi':d<10?d.toFixed(1)+' mi':Math.round(d)+' mi';}
@@ -376,12 +372,15 @@ function init(){
     }
   });
   renderListPanel();
+  function closeList(){listOpen=false;document.getElementById('listPanel').classList.remove('open');document.getElementById('listOverlay').classList.remove('show');document.getElementById('listToggle').classList.remove('active');}
   document.getElementById('listToggle').onclick=function(){
     listOpen=!listOpen;
-    document.getElementById('listPanel').classList.toggle('show',listOpen);
+    document.getElementById('listPanel').classList.toggle('open',listOpen);
+    document.getElementById('listOverlay').classList.toggle('show',listOpen);
     this.classList.toggle('active',listOpen);
     if(listOpen)renderListPanel();
   };
+  document.getElementById('listOverlay').onclick=closeList;
   document.getElementById('addBtn').onclick=function(){toggleAdd();};
   document.getElementById('listContent').addEventListener('click',function(e){
     var item=e.target.closest('.lv-item');if(!item)return;
@@ -478,27 +477,7 @@ var REGIONS=[
 var collapsedRegions={};
 
 function buildHB(){
-  var b=document.getElementById('hoodBar');b.innerHTML='';var all=V.concat(userVenues);
   var hs=document.getElementById('hoodSelect');if(hs)hs.value=allView?'':cH;
-  REGIONS.forEach(function(reg){
-    var rh=document.createElement('div');rh.className='rg-hdr';
-    var collapsed=!!collapsedRegions[reg.label];
-    rh.innerHTML='<span class="rg-label">'+reg.label+'</span><span class="rg-arrow">'+(collapsed?'▸':'▾')+'</span>';
-    rh.onclick=function(){
-      collapsedRegions[reg.label]=!collapsedRegions[reg.label];
-      buildHB();
-    };
-    b.appendChild(rh);
-    if(!collapsed){
-      reg.hoods.forEach(function(k){
-        if(!H[k])return;
-        var cnt=all.filter(function(x){return x.h===k}).length;
-        var ch=document.createElement('div');ch.className='hc'+(k===cH?' active':'');
-        ch.innerHTML=H[k].name+'<span class="hcc">'+cnt+'</span>';ch.onclick=function(){sw(k)};
-        b.appendChild(ch);
-      });
-    }
-  });
 }
 
 function sw(hood){
@@ -917,7 +896,6 @@ function doSearch(q){
         openSP(id);
         highlightMarker(id);
         var m=allMkrs[id];if(m)map.panTo(m.getLatLng());
-        var active=document.querySelector('#hoodBar .hc.active');if(active)active.scrollIntoView({block:'nearest',behavior:'smooth'});
       },hood!==cH?1200:100);
       res.classList.remove('show');
       document.getElementById('searchBox').value='';searchOpen=false;
