@@ -165,6 +165,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .lv-meta{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
 .lv-status{font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px}
 .lv-type{font-size:10px;color:var(--ts)}
+.lv-dist{font-size:10px;color:var(--np);font-weight:700;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -276,13 +277,20 @@ var cY=1985,cH='sunset',map,allMkrs={},drag=false,aF='all',aS='all',addMode=fals
 var allView=true,suppressZoomCheck=false,listOpen=true;
 var userLat=34.0522,userLng=-118.2437,hasGPS=false,radius=999;
 function hdist(a,b,c,d){var R=3958.8,p=(c-a)*Math.PI/180,q=(d-b)*Math.PI/180,e=Math.sin(p/2)*Math.sin(p/2)+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(q/2)*Math.sin(q/2);return R*2*Math.atan2(Math.sqrt(e),Math.sqrt(1-e));}
+function fd(d){if(!d&&d!==0)return '';return d<0.1?'<0.1 mi':d<10?d.toFixed(1)+' mi':Math.round(d)+' mi';}
 function esc(s){return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):''}
 var STATUS_LABELS={active:'Still here',closed:'Gone',demolished:'Demolished',transformed:'Transformed'};
 function slabel(v){return STATUS_LABELS[v.s]||v.s||'';}
 function renderListPanel(){
   var all=V.concat(userVenues);
-  var items=all.filter(function(v){return isVis(v)&&!v._ghost;});
-  items.sort(function(a,b){return(a.n||'').localeCompare(b.n||'');});
+  var items=all.filter(function(v){
+    if(!isVis(v)||v._ghost)return false;
+    if(hasGPS)v._d=hdist(userLat,userLng,v.lat,v.lng);
+    return true;
+  });
+  var showDist=hasGPS||radius<900;
+  if(showDist)items.sort(function(a,b){return(a._d||99999)-(b._d||99999);});
+  else items.sort(function(a,b){return(a.n||'').localeCompare(b.n||'');});
   document.getElementById('listCount').textContent=items.length+' venue'+(items.length!==1?'s':'');
   document.getElementById('listContent').innerHTML=items.map(function(v){
     var sl=slabel(v);
@@ -294,6 +302,7 @@ function renderListPanel(){
       '<div class="lv-info">'+
       '<div class="lv-name">'+esc(v.n)+'</div>'+
       '<div class="lv-meta">'+
+      (showDist&&v._d!=null?'<span class="lv-dist">'+fd(v._d)+'</span>':'')+
       (sl?'<span class="lv-status '+sCls+'">'+esc(sl)+'</span>':'')+'</div>'+
       '</div></div></div>';
   }).join('');
@@ -331,7 +340,20 @@ function init(){
   });
   document.addEventListener('click',function(){catDd.classList.remove('open');});
   document.getElementById('statusSelect').addEventListener('change',function(){aS=this.value;updateVis();});
-  document.getElementById('radiusSelect').addEventListener('change',function(){radius=parseFloat(this.value);updateVis();});
+  document.getElementById('radiusSelect').addEventListener('change',function(){
+    radius=parseFloat(this.value);
+    allView=true;
+    updateVis();
+    if(radius<900){
+      var lls=[];
+      if(hasGPS)lls.push(L.latLng(userLat,userLng));
+      Object.keys(allMkrs).forEach(function(id){var m=allMkrs[id];if(m&&map.hasLayer(m))lls.push(m.getLatLng());});
+      if(lls.length)map.fitBounds(L.latLngBounds(lls),{padding:[60,60],maxZoom:15});
+      else if(hasGPS)map.flyTo([userLat,userLng],14,{duration:1});
+    }else{
+      map.flyTo([34.052,-118.243],11,{duration:1});
+    }
+  });
   var hs=document.getElementById('hoodSelect');
   var allOpt=document.createElement('option');allOpt.value='';allOpt.textContent='All Neighborhoods';hs.appendChild(allOpt);
   REGIONS.forEach(function(reg){
