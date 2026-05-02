@@ -26,11 +26,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 #listToggle.active{border-color:var(--np);color:var(--np)}
 #listOverlay{display:none;position:fixed;inset:0;z-index:199}
 #listOverlay.show{display:block}
-#listPanel{position:fixed;top:0;left:0;bottom:0;width:280px;z-index:200;background:rgba(13,13,20,.97);backdrop-filter:blur(20px);border-right:1px solid var(--bd);transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden}
+#listPanel{position:fixed;top:0;left:0;bottom:0;width:230px;z-index:200;background:rgba(13,13,20,.97);backdrop-filter:blur(20px);transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden;mask-image:linear-gradient(to right,black 82%,transparent 100%);-webkit-mask-image:linear-gradient(to right,black 82%,transparent 100%)}
 #citySelect{background:rgba(26,26,36,.85);backdrop-filter:blur(12px);border:1px solid var(--bd);border-radius:20px;color:var(--ts);font-size:10px;letter-spacing:1px;cursor:pointer;padding:4px 8px;-webkit-appearance:none;appearance:none;outline:none}
 #citySelect option{background:var(--cd);color:var(--tx)}
 .ln-label{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--tm);margin-bottom:6px;font-weight:600}
 #listPanel.open{transform:translateX(0)}
+#listPanelHeader{display:none;padding:18px 14px 14px;font-size:17px;font-weight:900;letter-spacing:1px;text-transform:uppercase;background:linear-gradient(135deg,var(--np),var(--na));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex-shrink:0;border-bottom:1px solid var(--bd);line-height:1}
+#listPanel.open #listPanelHeader{display:block}
+#listPanel.open~#timeline .tl-logo{display:none}
 .hc{padding:5px 8px;border-radius:10px;background:rgba(26,26,36,.7);border:1px solid transparent;font-size:11px;font-weight:600;cursor:pointer;transition:.2s;display:flex;justify-content:space-between;align-items:center}
 .hc:hover{border-color:var(--bd);background:rgba(26,26,36,.9)}
 .hc.active{background:linear-gradient(135deg,rgba(255,45,123,.15),rgba(255,179,71,.1));border-color:var(--np);color:var(--tx)}
@@ -149,7 +152,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 #gpsBtn.loading{border-color:var(--ts);color:var(--ts);animation:gpsPulse 1s ease-in-out infinite}
 #gpsBtn.tracking{border-color:var(--np);color:var(--np)}
 @keyframes gpsPulse{0%,100%{opacity:1}50%{opacity:0.35}}
-#listCount{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--tm);padding:60px 14px 8px;flex-shrink:0;border-bottom:1px solid var(--bd)}
+#listCount{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--tm);padding:14px 14px 8px;flex-shrink:0;border-bottom:1px solid var(--bd)}
 #listContent{overflow-y:auto;flex:1;padding:8px 8px 16px;scrollbar-width:none}
 #listContent::-webkit-scrollbar{display:none}
 .lv-item{background:rgba(26,26,36,.5);border:1px solid transparent;border-radius:10px;padding:8px 10px;margin-bottom:5px;cursor:pointer;transition:.15s}
@@ -176,7 +179,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div id="intro"><div class="it">ERA MAPS</div><div class="is">Los Angeles Through Time</div><div id="introC" style="color:var(--ts);font-size:13px;margin-bottom:20px"></div><button class="ib" id="enterBtn">EXPLORE</button></div>
 <button id="listToggle" title="Venue list">☰</button>
 <div id="listOverlay"></div>
-<div id="listPanel"><div id="listCount"></div><div id="listContent"></div></div>
+<div id="listPanel"><div id="listPanelHeader">ERA MAPS</div><div id="listCount"></div><div id="listContent"></div></div>
 <div id="searchWrap"><input type="text" id="searchBox" placeholder="Search places..."><button id="searchBtn">🔍</button></div>
 <div id="controlsWrap"><select id="citySelect"><option value="la" selected>🌴 Los Angeles</option><option value="ny" disabled>🗽 New York</option><option value="lon" disabled>🇬🇧 London</option><option value="tok" disabled>⛩️ Tokyo</option></select><div class="cat-dd" id="catDd"><div class="cat-dd-btn" id="catDdBtn" tabindex="0"><span class="cd-label">All types</span></div><div class="cat-dd-list" id="catDdList"><div class="cat-dd-item selected" data-val="all">All types</div><div class="cat-dd-item" data-val="food"><span class="cd-dot" style="background:#5c7cfa"></span>Food</div><div class="cat-dd-item" data-val="music"><span class="cd-dot" style="background:#ff2d7b"></span>Music</div><div class="cat-dd-item" data-val="nightlife"><span class="cd-dot" style="background:#7c4dff"></span>Nightlife</div><div class="cat-dd-item" data-val="culture"><span class="cd-dot" style="background:#42a5f5"></span>Culture</div><div class="cat-dd-item" data-val="shop"><span class="cd-dot" style="background:#26c6da"></span>Shops</div><div class="cat-dd-item" data-val="hotel"><span class="cd-dot" style="background:#ffb347"></span>Hotels</div><div class="cat-dd-item" data-val="community"><span class="cd-dot" style="background:#66bb6a"></span>Community</div></div></div><select class="fsel" id="statusSelect"><option value="all">All status</option><option value="active">🌈 Still here</option><option value="closed">🩶 Gone</option><option value="demolished">🟤 Demolished</option><option value="transformed">🔄 Transformed</option></select><select id="radiusSelect" class="fsel" disabled><option value="999">All distances</option><option value="0.5">½ mile</option><option value="1">1 mile</option><option value="3">3 miles</option><option value="5">5 miles</option><option value="10">10 miles</option></select><select id="hoodSelect" class="fsel"></select><button id="addBtn" title="Add a location">+</button></div>
 <div id="searchResults"></div>
