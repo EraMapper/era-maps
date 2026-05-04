@@ -383,7 +383,7 @@ function init(){
   map.on('click',function(e){
     if(addMode){document.getElementById('ap-coords').value=e.latlng.lat.toFixed(5)+', '+e.latlng.lng.toFixed(5);}
   });
-  function unlockHood(){}
+  function unlockHood(){if(!allView){allView=true;updateVis();}}
   var mapEl=map.getContainer();
   mapEl.addEventListener('wheel',unlockHood,{passive:true});
   mapEl.addEventListener('touchstart',function(e){if(e.touches.length>=2)unlockHood();},{passive:true});
