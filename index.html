@@ -216,14 +216,15 @@ var STATUS_LABELS={active:'Still here',closed:'Gone',demolished:'Demolished',tra
 function slabel(v){return STATUS_LABELS[v.s]||v.s||'';}
 function renderListPanel(){
   var all=V.concat(userVenues);
+  var bounds=map.getBounds();
+  var center=map.getCenter();
   var items=all.filter(function(v){
-    if(!isVis(v))return false;
-    if(hasGPS)v._d=hdist(userLat,userLng,v.lat,v.lng);
-    return true;
+    var m=allMkrs[v.id];
+    if(!m||!map.hasLayer(m))return false;
+    return bounds.contains([v.lat,v.lng]);
   });
-  var showDist=hasGPS||radius<900;
-  if(showDist)items.sort(function(a,b){return(a._d||99999)-(b._d||99999);});
-  else items.sort(function(a,b){return(a.n||'').localeCompare(b.n||'');});
+  items.forEach(function(v){v._d=hdist(center.lat,center.lng,v.lat,v.lng);});
+  items.sort(function(a,b){return(a._d||99999)-(b._d||99999);});
   document.getElementById('listCount').textContent=items.length+' venue'+(items.length!==1?'s':'');
   document.getElementById('listContent').innerHTML=items.map(function(v){
     var sl=slabel(v);
@@ -235,7 +236,7 @@ function renderListPanel(){
       '<div class="lv-info">'+
       '<div class="lv-name">'+esc(v.n)+'</div>'+
       '<div class="lv-meta">'+
-      (showDist&&v._d!=null?'<span class="lv-dist">'+fd(v._d)+'</span>':'')+
+      '<span class="lv-dist">'+fd(v._d)+'</span>'+
       (sl?'<span class="lv-status '+sCls+'">'+esc(sl)+'</span>':'')+'</div>'+
       '</div></div></div>';
   }).join('');
@@ -382,11 +383,12 @@ function init(){
   map.on('click',function(e){
     if(addMode){document.getElementById('ap-coords').value=e.latlng.lat.toFixed(5)+', '+e.latlng.lng.toFixed(5);}
   });
-  function unlockHood(){if(!allView){allView=true;updateVis();}}
+  function unlockHood(){}
   var mapEl=map.getContainer();
   mapEl.addEventListener('wheel',unlockHood,{passive:true});
   mapEl.addEventListener('touchstart',function(e){if(e.touches.length>=2)unlockHood();},{passive:true});
   map.on('dragstart',unlockHood);
+  map.on('moveend',function(){if(listOpen)renderListPanel();});
   var zc=document.querySelector('.leaflet-control-zoom');
   if(zc)zc.addEventListener('click',unlockHood);
   loadUserData();
