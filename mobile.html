@@ -16,7 +16,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 
 /* MAP (hidden until ready) */
 #map{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0}
-#listView{position:fixed;top:0;left:0;right:0;bottom:0;z-index:500;background:var(--bg);overflow-y:auto;padding:calc(env(safe-area-inset-top,8px) + 125px) 12px calc(env(safe-area-inset-bottom,8px) + 60px);-webkit-overflow-scrolling:touch;display:none}.leaflet-tile-pane{filter:saturate(0.12) brightness(0.42) contrast(1.3) invert(1) hue-rotate(200deg)}
+#listView{position:fixed;top:0;left:0;right:0;bottom:0;z-index:500;background:var(--bg);overflow-y:auto;padding:calc(env(safe-area-inset-top,8px) + 175px) 12px calc(env(safe-area-inset-bottom,8px) + 60px);-webkit-overflow-scrolling:touch;display:none}.leaflet-tile-pane{filter:saturate(0.12) brightness(0.42) contrast(1.3) invert(1) hue-rotate(200deg)}
 .leaflet-control-zoom,.leaflet-control-attribution{display:none!important}
 
 /* TOP BAR */
@@ -229,7 +229,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
   </select>
  </div>
  <div id="decadeRow">
-  <div id="yearLabel">Now</div>
+  <div id="yearLabel">2026</div>
   <input type="range" id="yearSlider" min="1890" max="2026" value="2026" step="1">
  </div>
 </div>
@@ -751,6 +751,14 @@ function tryInitMap(){
 
     mapReady=true;
     mapObj.on('moveend',function(){renderListFromMap();});
+    var unlockHood=function(){
+      if(!activeHood) return;
+      activeHood='';
+      document.getElementById('hoodSelect').value='';
+      update();
+    };
+    mapObj.on('dragstart',unlockHood);
+    document.getElementById('map').addEventListener('touchstart',function(e){if(e.touches.length>=2)unlockHood();},{passive:true});
     document.getElementById('btnMap').style.opacity='1';
     document.getElementById('gpsBtn').className='show';
     updateMapMarkers(getFiltered());
@@ -1142,7 +1150,7 @@ document.getElementById('statusSelect').addEventListener('change',function(){
   slider.addEventListener('input',function(){
     activeYear=parseInt(this.value);
     var isPast=activeYear<2026;
-    lbl.textContent=isPast?String(activeYear):'Now';
+    lbl.textContent=String(activeYear);
     updateStatusLabels(isPast);
     setStatusDisabled(isPast);if(isPast)activeStatus='all';
     updateFill();
