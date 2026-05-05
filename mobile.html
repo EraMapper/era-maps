@@ -235,8 +235,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
   </select>
  </div>
  <div id="decadeRow">
-  <div id="yearLabel">2026</div>
-  <input type="range" id="yearSlider" min="1890" max="2026" value="2026" step="1">
+  <div id="yearLabel">1965</div>
+  <input type="range" id="yearSlider" min="1890" max="2026" value="1965" step="1">
  </div>
 </div>
 
@@ -275,7 +275,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 
 // ===== STATE =====
 var userLat=34.0522,userLng=-118.2437;
-var radius=999,activeCat='all',searchTerm='',activeStatus='all',activeYear=2026,activeHood='';
+var radius=999,activeCat='all',searchTerm='',activeStatus='all',activeYear=1965,activeHood='';
 var selectedId=null,hasGPS=false;
 var mapObj=null,mapReady=false,markers={},visibleIds={};
 var tracking=false,watchId=null;
@@ -700,7 +700,7 @@ function tryInitMap(){
   if(typeof L==='undefined') return;
   try{
     var el=document.getElementById('map');
-    mapObj=L.map(el,{zoomControl:false,attributionControl:false}).setView([userLat,userLng],radius>900?11:15);
+    mapObj=L.map(el,{zoomControl:false,attributionControl:false}).setView([34.0928,-118.3287],15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(mapObj);
 
     for(var i=0;i<V.length;i++){
@@ -1188,8 +1188,8 @@ document.getElementById('statusSelect').addEventListener('change',function(){
   });
   // Init
   updateFill();
-  updateStatusLabels(false);
-  setStatusDisabled(false);
+  updateStatusLabels(true);
+  setStatusDisabled(true);
 })();
 
 // GPS button
