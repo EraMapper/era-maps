@@ -145,6 +145,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 /* MAP MARKERS — circles by category */
 .vm{width:16px;height:16px;border-radius:50%;border:2.5px solid;transition:transform .15s;box-shadow:0 0 4px rgba(0,0,0,.5)}
 .vm.sel{transform:scale(1.8);box-shadow:0 0 10px rgba(255,255,255,.5)}
+@keyframes vm-ping{0%{transform:scale(1.8);box-shadow:0 0 0 0 rgba(255,255,255,.9)}60%{transform:scale(1.8);box-shadow:0 0 0 14px rgba(255,255,255,0)}100%{transform:scale(1.8);box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+.vm.vm-ping{animation:vm-ping .65s ease-out 4}
 .vm-food{background:#5c7cfa;border-color:#5c7cfa}
 .vm-music{background:#ff2d7b;border-color:#ff2d7b}
 .vm-nightlife{background:#7c4dff;border-color:#7c4dff}
@@ -1035,7 +1037,13 @@ document.getElementById('sheetBody').addEventListener('click',function(e){
         try{
           mapObj.setView([v.lat,v.lng],17,{animate:true});
           mapObj.once('moveend',function(){
-            try{var me=markers[id].getElement();if(me) me.className+=' sel';}catch(ex){}
+            try{
+              var me=markers[id].getElement();
+              if(me){
+                me.className+=' sel vm-ping';
+                setTimeout(function(){try{me.className=me.className.replace(/\s*vm-ping/g,'');}catch(ex){}},2800);
+              }
+            }catch(ex){}
           });
         }catch(ex){}
       }
