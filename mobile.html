@@ -1038,9 +1038,10 @@ document.getElementById('sheetBody').addEventListener('click',function(e){
       showMap();
       if(mapReady&&markers[id]){
         try{
-          mapObj.setView([v.lat,v.lng],16,{animate:true});
-          var me=markers[id].getElement();
-          if(me) me.className+=' sel';
+          mapObj.setView([v.lat,v.lng],17,{animate:true});
+          mapObj.once('moveend',function(){
+            try{var me=markers[id].getElement();if(me) me.className+=' sel';}catch(ex){}
+          });
         }catch(ex){}
       }
       return;
