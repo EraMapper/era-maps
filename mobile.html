@@ -127,6 +127,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .sh-related{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
 .sh-rel{font-size:11px;padding:4px 9px;border-radius:10px;background:rgba(255,45,123,.08);color:var(--np);border:1px solid rgba(255,45,123,.2);cursor:pointer;font-family:inherit}
 .sh-dir{display:inline-block;margin-top:12px;padding:8px 18px;border-radius:20px;background:linear-gradient(135deg,var(--np),var(--na));color:var(--bg);font-size:12px;font-weight:700;text-decoration:none;letter-spacing:.5px}
+.sh-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.sh-actions .sh-dir{margin-top:0}
+.sh-map-btn{padding:8px 18px;border-radius:20px;background:rgba(255,45,123,.1);border:1.5px solid var(--np);color:var(--np);font-size:12px;font-weight:700;letter-spacing:.5px;cursor:pointer;font-family:inherit}
 
 /* Peek card (map popup) */
 .peek{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;min-width:180px;max-width:220px;cursor:pointer;color:#fff}
@@ -603,7 +606,7 @@ function openSheet(id){
     h+='</div>';
   }
   if(v.w) h+='<a class="sh-wiki" href="https://en.wikipedia.org/wiki/'+v.w+'" target="_blank" rel="noopener">Wikipedia →</a>';
-  h+='<br><a class="sh-dir" href="https://maps.apple.com/?daddr='+v.lat+','+v.lng+'&dirflg=w" target="_blank" rel="noopener">Get Directions</a>';
+  h+='<div class="sh-actions"><button class="sh-map-btn">See on Map</button><a class="sh-dir" href="https://maps.apple.com/?daddr='+v.lat+','+v.lng+'&dirflg=w" target="_blank" rel="noopener">Get Directions</a></div>';
   h+='<div id="sheetCarousel" class="sh-carousel"></div>';
   if(v.rel&&v.rel.length){
     h+='<div class="sh-section">Related</div><div class="sh-related">';
@@ -1018,6 +1021,29 @@ document.getElementById('sheetBody').addEventListener('click',function(e){
         if(tid!==selectedId) openSheet(tid);
         return;
       }
+    }
+    node=node.parentNode;
+  }
+});
+
+// See on Map tap
+document.getElementById('sheetBody').addEventListener('click',function(e){
+  var node=e.target;
+  while(node&&node!==document.getElementById('sheetBody')){
+    if(node.className&&node.className.indexOf('sh-map-btn')>=0){
+      var id=selectedId;
+      var v=null;for(var i=0;i<V.length;i++){if(V[i].id===id){v=V[i];break;}}
+      if(!v) return;
+      closeSheet();
+      showMap();
+      if(mapReady&&markers[id]){
+        try{
+          mapObj.setView([v.lat,v.lng],16,{animate:true});
+          var me=markers[id].getElement();
+          if(me) me.className+=' sel';
+        }catch(ex){}
+      }
+      return;
     }
     node=node.parentNode;
   }
