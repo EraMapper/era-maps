@@ -359,7 +359,7 @@ function getFiltered(){
 }
 
 // ===== LIST RENDERING =====
-function renderList(venues){
+function renderList(venues,showDist){
   var el=document.getElementById('listView');
   var h='';
   for(var i=0;i<venues.length;i++){
@@ -371,7 +371,7 @@ function renderList(venues){
     h+='<div class="lv-info">';
     h+='<div class="lv-name">'+esc(v.n)+'</div>';
     h+='<div class="lv-meta">';
-    if(hasGPS||radius<900) h+='<span class="lv-dist">'+fd(v._d)+'</span>';
+    if(showDist||hasGPS||radius<900) h+='<span class="lv-dist">'+fd(v._d)+'</span>';
     h+='<span>'+esc(v.t)+'</span>';
     h+='<span>'+hn(v.h)+'</span>';
     h+='<span class="lv-status lv-s-'+v.s+'">'+slabel(v)+(v.ye?' '+v.ye:'')+'</span>';
@@ -381,6 +381,30 @@ function renderList(venues){
   }
   if(!h) h='<div style="text-align:center;color:var(--ts);padding:40px">No venues match</div>';
   el.innerHTML=h;
+}
+
+function renderListFromMap(){
+  if(!mapReady) return;
+  try{
+    var bounds=mapObj.getBounds();
+    var center=mapObj.getCenter();
+    var items=[];
+    for(var i=0;i<V.length;i++){
+      var v=V[i];
+      var m=markers[v.id];
+      if(!m||!mapObj.hasLayer(m)) continue;
+      if(!bounds.contains([v.lat,v.lng])) continue;
+      v._d=hdist(center.lat,center.lng,v.lat,v.lng);
+      items.push(v);
+    }
+    items.sort(function(a,b){return a._d-b._d});
+    var open=0,ghosts=0;
+    for(var i=0;i<items.length;i++){if(items[i]._ghost)ghosts++;else open++;}
+    var badge=open+' of 702';
+    if(ghosts) badge+=' · '+ghosts+' 👻';
+    document.getElementById('countBadge').textContent=badge;
+    renderList(items,true);
+  }catch(e){}
 }
 
 // ===== ADDRESS LINEAGE =====
@@ -612,13 +636,17 @@ function closeSheet(){
 // ===== UPDATE =====
 function update(){
   var f=getFiltered();
-  var open=0,ghosts=0;
-  for(var i=0;i<f.length;i++){if(f[i]._ghost)ghosts++;else open++;}
-  var badge=open+' of 702';
-  if(ghosts) badge+=' · '+ghosts+' 👻';
-  document.getElementById('countBadge').textContent=badge;
-  renderList(f);
-  if(mapReady) updateMapMarkers(f);
+  if(mapReady){
+    updateMapMarkers(f);
+    renderListFromMap();
+  }else{
+    var open=0,ghosts=0;
+    for(var i=0;i<f.length;i++){if(f[i]._ghost)ghosts++;else open++;}
+    var badge=open+' of 702';
+    if(ghosts) badge+=' · '+ghosts+' 👻';
+    document.getElementById('countBadge').textContent=badge;
+    renderList(f);
+  }
 }
 
 // ===== MAP (progressive enhancement) =====
@@ -722,6 +750,7 @@ function tryInitMap(){
     });
 
     mapReady=true;
+    mapObj.on('moveend',function(){renderListFromMap();});
     document.getElementById('btnMap').style.opacity='1';
     document.getElementById('gpsBtn').className='show';
     updateMapMarkers(getFiltered());
@@ -742,6 +771,7 @@ function showList(){
   clearActiveView();
   document.getElementById('listView').style.display='block';
   document.getElementById('btnList').className='vt active';
+  if(mapReady) renderListFromMap();
 }
 function showMap(){
   if(mapReady){
