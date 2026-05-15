@@ -234,8 +234,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
   </select>
  </div>
  <div id="decadeRow">
-  <div id="yearLabel">1965</div>
-  <input type="range" id="yearSlider" min="1890" max="2026" value="1965" step="1">
+  <div id="yearLabel">2026</div>
+  <input type="range" id="yearSlider" min="1890" max="2026" value="2026" step="1">
  </div>
 </div>
 
@@ -274,7 +274,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 
 // ===== STATE =====
 var userLat=34.0522,userLng=-118.2437;
-var radius=999,activeCat='all',searchTerm='',activeStatus='all',activeYear=1965,activeHood='';
+var radius=999,activeCat='all',searchTerm='',activeStatus='all',activeYear=2026,activeHood='';
 var selectedId=null,hasGPS=false;
 var mapObj=null,mapReady=false,markers={},visibleIds={};
 var tracking=false,watchId=null;
@@ -1226,42 +1226,26 @@ function handleGpsError(err){
 }
 
 document.getElementById('gpsBtn').addEventListener('click',function(){
-  if(tracking){
-    tracking=false;
-    setGpsState('idle');
-    try{navigator.geolocation.clearWatch(watchId)}catch(e){}
-    showToast('Location tracking off');
-  }else{
-    if(!navigator.geolocation){showToast('Location not supported');return;}
-    if(window.isSecureContext===false){showToast('HTTPS required for location');return;}
-    tracking=true;
-    setGpsState('locating');
-    showToast('Getting your location…',6000);
-    try{
-      navigator.geolocation.getCurrentPosition(function(p){
-        userLat=p.coords.latitude;userLng=p.coords.longitude;hasGPS=true;
-        if(radius>900){
-          radius=3;
-          document.getElementById('radiusSelect').value='3';
-        }
-        setGpsState('tracking');
-        showToast('Location found');
-        placeUserDot();
-        if(mapReady) try{mapObj.setView([userLat,userLng],15)}catch(e){}
-        update();
-      },function(err){handleGpsError(err)},{enableHighAccuracy:true,timeout:8000});
-      watchId=navigator.geolocation.watchPosition(function(p){
-        userLat=p.coords.latitude;userLng=p.coords.longitude;
-        if(!hasGPS){hasGPS=true;setGpsState('tracking');showToast('Location found');}
-        placeUserDot();
-        if(mapReady) try{mapObj.setView([userLat,userLng],mapObj.getZoom())}catch(e){}
-        update();
-      },function(err){handleGpsError(err)},{enableHighAccuracy:true});
-    }catch(e){
+  if(tracking) return;
+  if(!navigator.geolocation){showToast('Location not supported');return;}
+  if(window.isSecureContext===false){showToast('HTTPS required for location');return;}
+  tracking=true;
+  setGpsState('locating');
+  showToast('Getting your location…',6000);
+  try{
+    navigator.geolocation.getCurrentPosition(function(p){
+      userLat=p.coords.latitude;userLng=p.coords.longitude;hasGPS=true;
       tracking=false;
-      setGpsState('error');
-      showToast('Location error: '+e.message);
-    }
+      setGpsState('tracking');
+      showToast('Location found');
+      placeUserDot();
+      if(mapReady) try{mapObj.setView([userLat,userLng],15)}catch(e){}
+      update();
+    },function(err){handleGpsError(err)},{enableHighAccuracy:true,timeout:8000});
+  }catch(e){
+    tracking=false;
+    setGpsState('error');
+    showToast('Location error: '+e.message);
   }
 });
 
@@ -1283,10 +1267,6 @@ try{
       if(result.state==='granted'){
         navigator.geolocation.getCurrentPosition(function(p){
           userLat=p.coords.latitude;userLng=p.coords.longitude;hasGPS=true;
-          if(radius>900){
-            radius=3;
-            document.getElementById('radiusSelect').value='3';
-          }
           update();
           placeUserDot();
           if(mapReady) try{mapObj.setView([userLat,userLng],15)}catch(e){}
