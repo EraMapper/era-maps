@@ -259,7 +259,7 @@ function init(){
   document.getElementById('introC').textContent=all.length+' locations \u2022 28 neighborhoods \u2022 1890\u2013Present';
   map=L.map('map',{center:[34.052,-118.243],zoom:11,zoomControl:false,attributionControl:false});
   L.control.zoom({position:'bottomright'}).addTo(map);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd'}).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=cb1_4jry_1_ecf669c33c1d758c91b4ea86',{maxZoom:19,subdomains:'abcd'}).addTo(map);
   initEraTint();
   buildHB();buildHoodSelect();createAllMarkers();initS();initSearch();updateTk();setY(1985);updateSV();updateVis();
   updateSearchCount();
